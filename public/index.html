@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Generator WP</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer" />
+    <style>
+        .slide-out {
+            transition: transform 1s ease-out, opacity 1s ease-out;
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .slide-out.hide {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        .file-check-icon {
+            width: 15px;
+            height: 15px;
+            float: right;
+        }
+
+        .file-check-icon.fa-download {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="max-w-2xl w-full bg-white shadow-md rounded-lg p-8 space-y-6 relative">
+        <h1 class="text-3xl font-bold text-gray-800 flex items-center space-x-2">
+            <i class="fa-solid fa-globe"></i>
+            <span>Translation Generator WP</span>
+        </h1>
+        <textarea id="excludedTerms" placeholder="Enter terms to exclude from translation, separated by commas" class="block w-full p-4 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" rows="4"></textarea>
+        <div class="flex items-center space-x-4">
+            <label for="fileUpload" class="flex-1 flex items-center justify-center px-4 py-3 text-sm font-medium text-white bg-blue-500 rounded-lg cursor-pointer hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <i class="fas fa-upload mr-2"></i> Choose File
+            </label>
+            <input type="file" id="fileUpload" class="hidden">
+            <button id="translateBtn" disabled class="flex-1 px-4 py-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300">Translate</button>
+        </div>
+        <div id="fileDisplayContainer" class="hidden flex items-center space-x-2 mt-2 p-2 border rounded-lg bg-gray-50">
+            <i class="fa-regular fa-file-lines text-gray-500"></i>
+            <span id="fileName" class="text-sm text-gray-700 flex-1"></span>
+            <i id="fileCheckIcon" class="fa-solid fa-check file-check-icon hidden text-gray-800"></i>
+        </div>
+        <div id="progressContainer" class="hidden w-full mt-6 slide-out">
+            <div class="w-full bg-gray-200 rounded-lg h-8 relative">
+                <div id="progressBar" class="bg-green-500 h-8 rounded-lg" style="width: 0%"></div>
+                <div id="estimatedTime" class="absolute inset-0 flex items-center justify-center text-xs text-gray-800">0s</div>
+            </div>
+        </div>
+        <hr class="border-t border-dashed border-gray-300 my-4">
+        <div class="flex justify-between text-gray-500 text-xs mt-4">
+            <div id="stringsTranslated">Strings translated: 0/0</div>
+            <div id="tokensUsed">Tokens used: 0 ($0.00)</div>
+        </div>
+    </div>
+    <script src="/assets/js/translation-generator.js"></script>
+</body>
+</html>
