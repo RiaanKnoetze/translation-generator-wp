@@ -40,10 +40,11 @@ Create a `.env` file in the root directory of the project and add `OPENAI_API_KE
 
 4. **Run the project:**
 
-Start the server by running:
+Start the node server by running:
 
 ```
 npm start
+sudo node server.js
 ```
 
 5. **Access the application:**
@@ -53,4 +54,5 @@ Open your web browser and navigate to http://localhost:3000 to start using the T
 
 * Ensure you have the latest version of Node.js for the best performance and compatibility.
 * For detailed information on each dependency, refer to the package.json file.
+* This version only currently supports French localizations.
 
