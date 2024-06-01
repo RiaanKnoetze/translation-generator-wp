@@ -11,8 +11,33 @@ const skipTranslationSections = [
     "#. Description of the plugin"
 ];
 
+// Plural forms mapping
+const pluralFormsMapping = {
+    "en_US": "nplurals=2; plural=(n != 1);", // English (United States)
+    "es_ES": "nplurals=2; plural=(n != 1);", // Spanish (Spain)
+    "de_DE": "nplurals=2; plural=(n != 1);", // German
+    "fr_FR": "nplurals=2; plural=(n > 1);",  // French
+    "it_IT": "nplurals=2; plural=(n != 1);", // Italian
+    "pt_PT": "nplurals=2; plural=(n != 1);", // Portuguese (Portugal)
+    "ru_RU": "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);", // Russian
+    "nl_NL": "nplurals=2; plural=(n != 1);", // Dutch
+    "ja": "nplurals=1; plural=0;",           // Japanese
+    "zh_CN": "nplurals=1; plural=0;",        // Chinese (Simplified)
+    "pl_PL": "nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);", // Polish
+    "ro_RO": "nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2);", // Romanian
+    "hu_HU": "nplurals=2; plural=(n != 1);", // Hungarian
+    "sv_SE": "nplurals=2; plural=(n != 1);", // Swedish
+    "fi": "nplurals=2; plural=(n != 1);",    // Finnish
+    "da_DK": "nplurals=2; plural=(n != 1);", // Danish
+    "el": "nplurals=2; plural=(n != 1);",    // Greek
+    "tr_TR": "nplurals=1; plural=0;",        // Turkish
+    "he_IL": "nplurals=2; plural=(n != 1);", // Hebrew
+    "ko_KR": "nplurals=1; plural=0;"         // Korean
+    // Add other language mappings as necessary
+};
+
 // Main function to process the content for translation
-export async function processContent(content, excludedTerms, originalFileName, startTime) {
+export async function processContent(content, excludedTerms, originalFileName, startTime, selectedLanguage) {
     const lines = content.split('\n'); // Split the content into lines
     const normalizedExclusions = excludedTerms.map(term => term.toLowerCase()); // Normalize exclusions to lowercase
     const exclusionMap = new Map(); // Map to store original exclusions
@@ -28,30 +53,31 @@ export async function processContent(content, excludedTerms, originalFileName, s
 
     const today = new Date();
     const revisionDate = today.toISOString().replace('T', ' ').split('.')[0] + '+0000'; // Format revision date
-    const pluginName = formatPluginName(originalFileName.replace('_FR_fr', '')); // Format the plugin name
+    const pluginName = formatPluginName(originalFileName.replace(/-[a-z]{2}_[A-Z]{2}$/, '')); // Format the plugin name
 
     normalizedExclusions.push(pluginName.toLowerCase()); // Add plugin name to exclusions
     exclusionMap.set(pluginName.toLowerCase(), pluginName); // Add to exclusion map
 
-    const header = createHeader(pluginName, revisionDate); // Create the header for the translation file
+    const header = createHeader(pluginName, revisionDate, selectedLanguage); // Create the header for the translation file
     translatedLines.push(header); // Add the header to the translated lines
 
     // Process singular translations
-    translatedLines = await processSingularTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime);
+    translatedLines = await processSingularTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage);
     // Remove invalid plural sections
     translatedLines = removeInvalidPluralSections(translatedLines);
     // Process plural translations
-    translatedLines = await processPluralTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime);
+    translatedLines = await processPluralTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage);
 
     updateProgress(totalStrings, totalStrings, startTime); // Final progress update
     updateTokensUsed(totalTranslations * 2, totalTranslations * 2); // Update token usage
 
-    return translatedLines.join('\n'); // Return the translated content
+    return { translatedContent: translatedLines.join('\n'), selectedLanguage }; // Return the translated content and selected language
 }
 
 // Function to create the header for the translation file
-function createHeader(pluginName, revisionDate) {
-    return `# Translation of Plugins - ${pluginName} in French (France)
+function createHeader(pluginName, revisionDate, selectedLanguage) {
+    const pluralForms = pluralFormsMapping[selectedLanguage] || "nplurals=2; plural=(n != 1);"; // Default to English plural forms if not found
+    return `# Translation of Plugins - ${pluginName} in ${selectedLanguage}
 # This file is distributed under the same license as the Plugins - ${pluginName} package.
 msgid ""
 msgstr ""
@@ -59,15 +85,15 @@ msgstr ""
 "MIME-Version: 1.0\\n"
 "Content-Type: text/plain; charset=UTF-8\\n"
 "Content-Transfer-Encoding: 8bit\\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\\n"
+"Plural-Forms: ${pluralForms}\\n"
 "X-Generator: Translation Generator/1.0.0\\n"
-"Language: fr\\n"
+"Language: ${selectedLanguage}\\n"
 "Project-Id-Version: Plugins - ${pluginName}\\n"
 `;
 }
 
 // Function to process singular translations
-async function processSingularTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime) {
+async function processSingularTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage) {
     let metadata = []; // Array to hold metadata lines
     let msgidLine = ''; // Variable to hold the msgid line
     let skipSection = false; // Flag to indicate if the section should be skipped
@@ -114,7 +140,7 @@ async function processSingularTranslations(lines, translatedLines, normalizedExc
             msgidLine = ''; // Clear msgid line
 
             if (batch.length === batchSize) {
-                translatedLines = await translateBatch(batch, translatedLines, exclusionMap); // Translate the batch
+                translatedLines = await translateBatch(batch, translatedLines, exclusionMap, selectedLanguage); // Translate the batch
                 totalTranslations += batch.length; // Update total translations
                 updateProgress(totalTranslations, totalStrings, startTime); // Update progress
                 batch = []; // Clear batch
@@ -123,7 +149,7 @@ async function processSingularTranslations(lines, translatedLines, normalizedExc
     }
 
     if (batch.length > 0) {
-        translatedLines = await translateBatch(batch, translatedLines, exclusionMap); // Translate remaining batch
+        translatedLines = await translateBatch(batch, translatedLines, exclusionMap, selectedLanguage); // Translate remaining batch
         totalTranslations += batch.length; // Update total translations
         updateProgress(totalTranslations, totalStrings, startTime); // Update progress
     }
@@ -132,7 +158,7 @@ async function processSingularTranslations(lines, translatedLines, normalizedExc
 }
 
 // Function to process plural translations
-async function processPluralTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime) {
+async function processPluralTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage) {
     let metadata = []; // Array to hold metadata lines
     let msgidLine = ''; // Variable to hold the msgid line
     let msgidPluralLine = ''; // Variable to hold the msgid_plural line
@@ -187,7 +213,7 @@ async function processPluralTranslations(lines, translatedLines, normalizedExclu
             msgidPluralLine = ''; // Clear msgid_plural line
 
             if (batch.length === batchSize) {
-                translatedLines = await translatePluralBatch(batch, translatedLines, exclusionMap); // Translate the batch
+                translatedLines = await translatePluralBatch(batch, translatedLines, exclusionMap, selectedLanguage); // Translate the batch
                 totalTranslations += batch.length; // Update total translations
                 updateProgress(totalTranslations, totalStrings, startTime); // Update progress
                 batch = []; // Clear batch
@@ -196,7 +222,7 @@ async function processPluralTranslations(lines, translatedLines, normalizedExclu
     }
 
     if (batch.length > 0) {
-        translatedLines = await translatePluralBatch(batch, translatedLines, exclusionMap); // Translate remaining batch
+        translatedLines = await translatePluralBatch(batch, translatedLines, exclusionMap, selectedLanguage); // Translate remaining batch
         totalTranslations += batch.length; // Update total translations
         updateProgress(totalTranslations, totalStrings, startTime); // Update progress
     }
@@ -205,8 +231,8 @@ async function processPluralTranslations(lines, translatedLines, normalizedExclu
 }
 
 // Function to translate a batch of singular texts
-async function translateBatch(batch, translatedLines, exclusionMap) {
-    const translations = await translateTexts(batch.map(item => item.text)); // Translate the batch of texts
+async function translateBatch(batch, translatedLines, exclusionMap, selectedLanguage) {
+    const translations = await translateTexts(batch.map(item => item.text), selectedLanguage); // Translate the batch of texts
 
     batch.forEach((item, index) => {
         let translation = translations[index]; // Get the translated text
@@ -221,9 +247,9 @@ async function translateBatch(batch, translatedLines, exclusionMap) {
 }
 
 // Function to translate a batch of plural texts
-async function translatePluralBatch(batch, translatedLines, exclusionMap) {
-    const translations = await translateTexts(batch.map(item => item.text)); // Translate the batch of singular texts
-    const pluralTranslations = await translateTexts(batch.map(item => item.pluralText)); // Translate the batch of plural texts
+async function translatePluralBatch(batch, translatedLines, exclusionMap, selectedLanguage) {
+    const translations = await translateTexts(batch.map(item => item.text), selectedLanguage); // Translate the batch of singular texts
+    const pluralTranslations = await translateTexts(batch.map(item => item.pluralText), selectedLanguage); // Translate the batch of plural texts
 
     batch.forEach((item, index) => {
         let translation = translations[index]; // Get the translated singular text
@@ -306,14 +332,14 @@ export function initializeFileCheckIcon() {
 }
 
 // Function to send texts to the server for translation
-async function translateTexts(texts) {
+async function translateTexts(texts, selectedLanguage) {
     try {
         const response = await fetch('http://localhost:3000/translate', {
             method: 'POST', // HTTP method
             headers: {
                 'Content-Type': 'application/json' // Content type of the request
             },
-            body: JSON.stringify({ texts }) // Data to be sent in the request body
+            body: JSON.stringify({ texts, language: selectedLanguage }) // Data to be sent in the request body
         });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

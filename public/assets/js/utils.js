@@ -1,16 +1,12 @@
-// Function to format the plugin name by capitalizing the first letter of each word
 export function formatPluginName(name) {
     return name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
-// Function to apply fixes to the translation
 export function applyFixes(original, translation, exclusionMap) {
     if (!original || !translation) return translation;
 
-    // Replace French quotes with double quotes
     translation = translation.replace(/«/g, '"').replace(/»/g, '"');
 
-    // Ensure placeholders are retained in the translation
     const placeholders = original.match(/%[0-9]+\$[a-zA-Z]/g) || [];
     placeholders.forEach(placeholder => {
         if (!translation.includes(placeholder)) {
@@ -18,10 +14,8 @@ export function applyFixes(original, translation, exclusionMap) {
         }
     });
 
-    // Remove extra spaces before punctuation
     translation = translation.replace(/\s+([.,?!])/g, '$1');
 
-    // Ensure leading and trailing spaces match the original
     if (/^\s/.test(original)) {
         translation = ` ${translation}`;
     }
@@ -29,27 +23,22 @@ export function applyFixes(original, translation, exclusionMap) {
         translation = `${translation} `;
     }
 
-    // Preserve excluded terms with correct casing
     exclusionMap.forEach((originalTerm, normalizedTerm) => {
         const regex = new RegExp(`\\b${normalizedTerm}\\b`, 'gi');
         translation = translation.replace(regex, match => originalTerm);
     });
 
-    // Remove unwanted non-breaking spaces
     translation = translation.replace(/[\u00A0]/g, ' ');
 
-    // Escape double quotes
     translation = translation.replace(/"/g, '\\"');
 
     return translation;
 }
 
-// Function to count the number of tokens in a text
 export function getTokenCount(text) {
     return text.split(/\s+/).length;
 }
 
-// Function to update the translation progress
 export function updateProgress(translated, total, startTime) {
     const progressBar = document.getElementById('progressBar');
     const stringsTranslated = document.getElementById('stringsTranslated');
@@ -68,11 +57,10 @@ export function updateProgress(translated, total, startTime) {
     }
 }
 
-// Function to update the token usage
 export function updateTokensUsed(inputTokens, outputTokens) {
     const tokensUsed = document.getElementById('tokensUsed');
-    const inputCostPerMillionTokens = 5.00; // Cost per million input tokens
-    const outputCostPerMillionTokens = 15.00; // Cost per million output tokens
+    const inputCostPerMillionTokens = 5.00;
+    const outputCostPerMillionTokens = 15.00;
 
     const inputCost = (inputTokens / 1000000) * inputCostPerMillionTokens;
     const outputCost = (outputTokens / 1000000) * outputCostPerMillionTokens;
@@ -80,7 +68,6 @@ export function updateTokensUsed(inputTokens, outputTokens) {
     tokensUsed.textContent = `Tokens used: ${inputTokens + outputTokens} ($${totalCost.toFixed(2)})`;
 }
 
-// Function to reset the progress and token usage displays
 export function resetProgressAndTokens() {
     const stringsTranslated = document.getElementById('stringsTranslated');
     const tokensUsed = document.getElementById('tokensUsed');
@@ -89,13 +76,11 @@ export function resetProgressAndTokens() {
     tokensUsed.textContent = `Tokens used: 0 ($0.00)`;
 }
 
-// Function to reset the excluded terms input
 export function resetExcludedTerms() {
     const excludedTermsInput = document.getElementById('excludedTerms');
     excludedTermsInput.value = '';
 }
 
-// Function to add the plugin name to the excluded terms
 export function addPluginNameToExclusions(fileName) {
     const excludedTermsInput = document.getElementById('excludedTerms');
     const pluginName = formatPluginName(fileName.replace('-fr_FR', ''));
@@ -106,7 +91,6 @@ export function addPluginNameToExclusions(fileName) {
     excludedTermsInput.value = existingTerms.join(', ');
 }
 
-// Function to calculate the number of strings in the file
 export function calculateStringsInFile(file) {
     const reader = new FileReader();
     const stringsTranslated = document.getElementById('stringsTranslated');
@@ -118,22 +102,20 @@ export function calculateStringsInFile(file) {
     reader.readAsText(file);
 }
 
-// Function to check if a term is in the excluded terms
 export function isExcludedTerm(term, normalizedExclusions) {
     return normalizedExclusions.includes(term.toLowerCase());
 }
 
-// Function to save the translated file
-export function saveTranslatedFile(translatedContent, originalFileName) {
+export function saveTranslatedFile(translatedContent, originalFileName, selectedLanguage) {
     const blob = new Blob([translatedContent], { type: 'text/plain' });
+    const newFileName = `${originalFileName}-${selectedLanguage}.po`;
     const link = document.createElement('a');
-    const newFileName = `${originalFileName}-fr_FR.po`;
     link.href = window.URL.createObjectURL(blob);
     link.download = newFileName;
     link.click();
 }
 
-// Function to show a notification
+
 export function showNotification(message, type = 'green') {
     const notificationContainer = document.getElementById('notification-container');
     notificationContainer.innerHTML = `

@@ -1,6 +1,7 @@
 *** Translation Generator WP ***
 
-xxx - version 1.2
+2024-06-01 - version 1.2
+* New - Add 20 most widely used WordPress languages to translate files to
 * New - Add tabbed navigation
 * New - Add OpenAI API field linked to .env file
 * New - Add languages select field linked to .env file

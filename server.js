@@ -1,4 +1,3 @@
-// server.js
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -17,6 +16,9 @@ app.use(express.static('public'));
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY 
 });
+
+// In-memory storage for language mappings
+let languageMapping = {};
 
 // Route to handle saving the API key and selected language
 app.post('/save-settings', (req, res) => {
@@ -66,21 +68,35 @@ app.get('/get-settings', (req, res) => {
     res.json({ apiKey, selectedLanguage });
 });
 
+// Route to receive language mapping from frontend
+app.post('/set-language-mapping', (req, res) => {
+    languageMapping = req.body.languageMapping;
+    res.json({ message: 'Language mapping set successfully' });
+});
+
+// Route to handle translation
 app.post('/translate', async (req, res) => {
     try {
-        const texts = req.body.texts; // An array of texts
-        let translatedTexts = await Promise.all(texts.map(text => {
+        const { texts, language } = req.body; // Get texts and target language from the request body
+        const languageName = languageMapping[language]; // Map the language code to language name
+
+        if (!languageName) {
+            return res.status(400).json({ error: 'Unsupported language code' });
+        }
+
+        const translations = await Promise.all(texts.map(text => {
             return openai.chat.completions.create({
                 model: "gpt-4", // Use the latest model
-                messages: [{ role: "user", content: `Translate the following English text to French. Please translate only the text and don't write anything else: ${text}` }]
+                messages: [{ role: "user", content: `Translate the following text to ${languageName}. When needed, use the formal form of "you". Please translate only the text and don't write anything else. Text to translate: ${text}` }]
             }).then(response => response.choices[0].message.content.trim());
         }));
-        res.json({ translatedTexts });
+        res.json({ translatedTexts: translations });
     } catch (error) {
         console.error('Error processing translations:', error);
         res.status(500).json({ error: 'Failed to process translations' });
     }
 });
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
