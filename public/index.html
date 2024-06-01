@@ -4,65 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Translation Generator WP</title>
-    <!-- Tailwind CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer" />
-    <style>
-        .slide-out {
-            transition: transform 1s ease-out, opacity 1s ease-out;
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .slide-out.hide {
-            transform: translateY(100%);
-            opacity: 0;
-        }
-
-        .file-check-icon {
-            width: 15px;
-            height: 15px;
-            float: right;
-        }
-
-        .file-check-icon.fa-download {
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="/assets/css/translator.css">
+    <link href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script src="/assets/js/main.js" type="module"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
-    <div class="max-w-2xl w-full bg-white shadow-md rounded-lg p-8 space-y-6 relative">
-        <h1 class="text-3xl font-bold text-gray-800 flex items-center space-x-2">
-            <i class="fa-solid fa-globe"></i>
-            <span>Translation Generator WP</span>
-            <span class="text-right text-gray-300 text-xs font-normal">v1.1</span>
-        </h1>
-        <textarea id="excludedTerms" placeholder="Enter terms to exclude from translation, separated by commas" class="block w-full p-4 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" rows="4"></textarea>
-        <div class="flex items-center space-x-4">
-            <label for="fileUpload" class="flex-1 flex items-center justify-center px-4 py-3 text-sm font-medium text-white bg-blue-500 rounded-lg cursor-pointer hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <i class="fas fa-upload mr-2"></i> Choose File
-            </label>
-            <input type="file" id="fileUpload" class="hidden">
-            <button id="translateBtn" disabled class="flex-1 px-4 py-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300">Translate</button>
+    <div class="flex w-full max-w-4xl">
+        <!-- Vertical Tabs -->
+        <div class="tabs">
+            <button id="tabTranslate" class="active rounded-tl-lg rounded-bl-lg shadow-md bg-gray-800">App</button>
+            <button id="tabSettings">Settings</button>
         </div>
-        <div id="fileDisplayContainer" class="hidden flex items-center space-x-2 mt-2 p-2 border rounded-lg bg-gray-50">
-            <i class="fa-regular fa-file-lines text-gray-500"></i>
-            <span id="fileName" class="text-sm text-gray-700 flex-1"></span>
-            <i id="fileCheckIcon" class="fa-solid fa-check file-check-icon hidden text-gray-800"></i>
-        </div>
-        <div id="progressContainer" class="hidden w-full mt-6 slide-out">
-            <div class="w-full bg-gray-200 rounded-lg h-8 relative">
-                <div id="progressBar" class="bg-green-500 h-8 rounded-lg" style="width: 0%"></div>
-                <div id="estimatedTime" class="absolute inset-0 flex items-center justify-center text-xs text-gray-800">0s</div>
+        
+        <!-- Tab Contents -->
+        <div class="flex-1">
+            <div id="translateContainer" class="tab-content active">
+                <div class="max-w-2xl w-full bg-white shadow-md rounded-lg p-8 space-y-6 relative">
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center space-x-2">
+                        <i class="fa-solid fa-globe"></i>
+                        <span>Translation Generator WP</span>
+                        <span class="text-right text-gray-300 text-xs font-normal">v1.2</span>
+                    </h1>
+                    <textarea id="excludedTerms" placeholder="Enter terms to exclude from translation, separated by commas" class="block w-full p-4 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" rows="4"></textarea>
+                    <div class="flex items-center space-x-4">
+                        <label for="fileUpload" class="flex-1 flex items-center justify-center px-4 py-3 text-sm font-medium text-white bg-blue-500 rounded-lg cursor-pointer hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="fas fa-upload mr-2"></i> Choose File
+                        </label>
+                        <input type="file" id="fileUpload" class="hidden">
+                        <button id="translateBtn" disabled class="flex-1 px-4 py-3 text-sm font-medium text-white bg-green-500 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-300">Translate</button>
+                    </div>
+                    <div id="fileDisplayContainer" class="hidden flex items-center space-x-2 mt-2 p-2 border rounded-lg bg-gray-50">
+                        <i class="fa-regular fa-file-lines text-gray-500"></i>
+                        <span id="fileName" class="text-sm text-gray-700 flex-1"></span>
+                        <i id="fileCheckIcon" class="fa-solid fa-check file-check-icon hidden text-gray-800"></i>
+                    </div>
+                    <div id="progressContainer" class="hidden w-full mt-6 slide-out">
+                        <div class="w-full bg-gray-200 rounded-lg h-8 relative">
+                            <div id="progressBar" class="bg-green-500 h-8 rounded-lg" style="width: 0%"></div>
+                            <div id="estimatedTime" class="absolute inset-0 flex items-center justify-center text-xs text-gray-800">0s</div>
+                        </div>
+                    </div>
+                    <hr class="border-t border-dashed border-gray-300 my-4">
+                    <div class="flex justify-between text-gray-500 text-xs mt-4">
+                        <div id="stringsTranslated">Strings translated: 0/0</div>
+                        <div id="tokensUsed">Tokens used: 0 ($0.00)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="settingsContainer" class="tab-content">
+                <div class="max-w-2xl w-full bg-white shadow-md rounded-lg p-8 space-y-6 relative">
+                    <h1 class="text-2xl font-bold text-gray-800">Settings</h1>
+                    <!-- Notification Container -->
+                    <div id="notification-container" class="mb-4"></div>
+
+                    <div class="mt-6 border-t border-gray-100">
+                        <dl class="divide-y divide-gray-100">
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiKey">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">OpenAI API Key</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                    <input type="password" name="apiKey" id="apiKey" autocomplete="off" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6">
+                                </dd>
+                            </div>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiLanguages">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Target Language</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                    <select id="languageSelect" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6">
+                                        <option value="en_US">English (United States)</option>
+                                        <option value="es_ES">Spanish</option>
+                                        <option value="de_DE">German</option>
+                                        <option value="fr_FR">French</option>
+                                        <option value="it_IT">Italian</option>
+                                        <option value="pt_PT">Portuguese (Portugal)</option>
+                                        <option value="ru_RU">Russian</option>
+                                        <option value="nl_NL">Dutch</option>
+                                        <option value="ja">Japanese</option>
+                                        <option value="zh_CN">Chinese (Simplified)</option>
+                                        <option value="pl_PL">Polish</option>
+                                        <option value="ro_RO">Romanian</option>
+                                        <option value="hu_HU">Hungarian</option>
+                                        <option value="sv_SE">Swedish</option>
+                                        <option value="fi">Finnish</option>
+                                        <option value="da_DK">Danish</option>
+                                        <option value="el">Greek</option>
+                                        <option value="tr_TR">Turkish</option>
+                                        <option value="he_IL">Hebrew</option>
+                                        <option value="ko_KR">Korean</option>
+                                    </select>
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
+                    <!-- Save Button -->
+                    <div class="flex justify-end mt-4">
+                        <button id="saveBtn" class="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Save</button>
+                    </div>
+                </div>
             </div>
         </div>
-        <hr class="border-t border-dashed border-gray-300 my-4">
-        <div class="flex justify-between text-gray-500 text-xs mt-4">
-            <div id="stringsTranslated">Strings translated: 0/0</div>
-            <div id="tokensUsed">Tokens used: 0 ($0.00)</div>
-        </div>
     </div>
-    <script src="/assets/js/main.js" type="module"></script>
 </body>
 </html>

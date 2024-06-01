@@ -1,5 +1,12 @@
 *** Translation Generator WP ***
 
+xxx - version 1.2
+* New - Add tabbed navigation
+* New - Add OpenAI API field linked to .env file
+* New - Add languages select field linked to .env file
+* New - Add save notifications
+* Tweak - Update translate button colors
+
 2024-05-29 - version 1.1
 * New: Add changelog
 * Tweak: Show version number to front end
