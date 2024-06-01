@@ -1,6 +1,7 @@
 # Translation Generator WP
 
 ![Translation Generator WP](translation-generator-wp.png)
+![Translation Generator WP - Settings](translation-generator-wp-settings.png)
 
 ## Project Overview
 
@@ -36,7 +37,7 @@ npm install
 
 3. **Set up environment variables:**
 
-Create a `.env` file in the root directory of the project and add `OPENAI_API_KEY=sk-123` where `sk-123` is your OpenAI API Key.
+*[Optional]*: Create a `.env` file in the root directory of the project and add `OPENAI_API_KEY=sk-123` where `sk-123` is your OpenAI API Key. This can also be configured on the app settings page.
 
 4. **Run the project:**
 
