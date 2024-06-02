@@ -66,6 +66,7 @@ export function updateTokensUsed(inputTokens, outputTokens) {
     const outputCost = (outputTokens / 1000000) * outputCostPerMillionTokens;
     const totalCost = inputCost + outputCost;
     tokensUsed.textContent = `Tokens used: ${inputTokens + outputTokens} ($${totalCost.toFixed(2)})`;
+    console.log(`Input tokens: ${inputTokens}, Output tokens: ${outputTokens}, Cost: $${totalCost.toFixed(2)}`);
 }
 
 export function resetProgressAndTokens() {
@@ -114,7 +115,6 @@ export function saveTranslatedFile(translatedContent, originalFileName, selected
     link.download = newFileName;
     link.click();
 }
-
 
 export function showNotification(message, type = 'green') {
     const notificationContainer = document.getElementById('notification-container');
