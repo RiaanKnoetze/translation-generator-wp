@@ -257,6 +257,7 @@ async function translateBatch(batch, translatedLines, exclusionMap, selectedLang
     const translations = await translateTexts(batch.map(item => item.text), selectedLanguage); // Translate the batch of texts
     const inputTokens = batch.reduce((sum, item) => sum + getTokenCount(item.text), 0); // Calculate input tokens
     const outputTokens = translations.reduce((sum, translation) => sum + getTokenCount(translation), 0); // Calculate output tokens
+    const combinedTokens = inputTokens + outputTokens;
 
     batch.forEach((item, index) => {
         let translation = translations[index]; // Get the translated text
@@ -267,10 +268,10 @@ async function translateBatch(batch, translatedLines, exclusionMap, selectedLang
         translatedLines.push(''); // Add empty line
     });
 
-    console.log(`Input tokens: ${inputTokens}, Output tokens: ${outputTokens}, Cost: $${((inputTokens / 1000) * 0.005 + (outputTokens / 1000) * 0.015).toFixed(2)}`);
-
+    console.log(`Combined tokens: ${combinedTokens}, Cost: $${((inputTokens / 1000) * 0.005 + (outputTokens / 1000) * 0.015).toFixed(5)}`);
     return { translatedLines, inputTokens, outputTokens };
 }
+
 
 // Function to translate a batch of plural texts
 async function translatePluralBatch(batch, translatedLines, exclusionMap, selectedLanguage) {

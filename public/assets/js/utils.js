@@ -59,15 +59,20 @@ export function updateProgress(translated, total, startTime) {
 
 export function updateTokensUsed(inputTokens, outputTokens) {
     const tokensUsed = document.getElementById('tokensUsed');
-    const inputCostPerMillionTokens = 5.00;
-    const outputCostPerMillionTokens = 15.00;
+    const inputCostPerThousandTokens = 0.005;
+    const outputCostPerThousandTokens = 0.015;
 
-    const inputCost = (inputTokens / 1000000) * inputCostPerMillionTokens;
-    const outputCost = (outputTokens / 1000000) * outputCostPerMillionTokens;
+    const inputCost = (inputTokens / 1000) * inputCostPerThousandTokens;
+    const outputCost = (outputTokens / 1000) * outputCostPerThousandTokens;
     const totalCost = inputCost + outputCost;
-    tokensUsed.textContent = `Tokens used: ${inputTokens + outputTokens} ($${totalCost.toFixed(2)})`;
-    console.log(`Input tokens: ${inputTokens}, Output tokens: ${outputTokens}, Cost: $${totalCost.toFixed(2)}`);
+    const combinedTokens = inputTokens + outputTokens;
+
+    console.log(`Combined tokens: ${combinedTokens}, Cost: $${totalCost.toFixed(5)}`);
+
+    tokensUsed.textContent = `Tokens used: ${combinedTokens} ($${totalCost.toFixed(5)})`;
 }
+
+
 
 export function resetProgressAndTokens() {
     const stringsTranslated = document.getElementById('stringsTranslated');
