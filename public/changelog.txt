@@ -7,6 +7,7 @@ xxx - version 1.3
 * Tweak: Move excluded terms to settings pages
 * Fix: Tokens used calculations
 * Fix: Tokens cost calculations
+* Fix: Remove trailing periods from translations if source sentence doesn't have one
 
 2024-06-01 - version 1.2
 * New - Add 20 most widely used WordPress languages to translate files to

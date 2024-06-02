@@ -5,8 +5,10 @@ export function formatPluginName(name) {
 export function applyFixes(original, translation, exclusionMap) {
     if (!original || !translation) return translation;
 
+    // Replace specific quotation marks with standard double quotes
     translation = translation.replace(/«/g, '"').replace(/»/g, '"');
 
+    // Ensure placeholders are correctly included in the translation
     const placeholders = original.match(/%[0-9]+\$[a-zA-Z]/g) || [];
     placeholders.forEach(placeholder => {
         if (!translation.includes(placeholder)) {
@@ -14,22 +16,33 @@ export function applyFixes(original, translation, exclusionMap) {
         }
     });
 
+    // Correct spacing around punctuation
     translation = translation.replace(/\s+([.,?!])/g, '$1');
 
+    // Add space at the beginning if the original starts with a space
     if (/^\s/.test(original)) {
         translation = ` ${translation}`;
     }
+    // Add space at the end if the original ends with a space
     if (/\s$/.test(original)) {
         translation = `${translation} `;
     }
 
+    // Restore original terms from the exclusion map
     exclusionMap.forEach((originalTerm, normalizedTerm) => {
         const regex = new RegExp(`\\b${normalizedTerm}\\b`, 'gi');
         translation = translation.replace(regex, match => originalTerm);
     });
 
+    // Replace non-breaking spaces with regular spaces
     translation = translation.replace(/[\u00A0]/g, ' ');
 
+    // Remove extra period if the original doesn't end with one
+    if (!original.trim().endsWith('.') && translation.trim().endsWith('.')) {
+        translation = translation.trim().slice(0, -1);
+    }
+
+    // Escape double quotes in the translation
     translation = translation.replace(/"/g, '\\"');
 
     return translation;
