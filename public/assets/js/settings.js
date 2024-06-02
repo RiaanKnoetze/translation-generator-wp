@@ -1,7 +1,7 @@
 import { showNotification } from './utils.js';
 
-// Function to save settings (API key and selected language) to the server
-export async function saveSettings(apiKey, selectedLanguage) {
+// Function to save settings (API key, selected language, and selected model) to the server
+export async function saveSettings(apiKey, selectedLanguage, selectedModel) {
     try {
         // Send a POST request to save the settings
         const response = await fetch('/save-settings', {
@@ -9,7 +9,7 @@ export async function saveSettings(apiKey, selectedLanguage) {
             headers: {
                 'Content-Type': 'application/json' // Content type of the request
             },
-            body: JSON.stringify({ apiKey, selectedLanguage }) // Data to be sent in the request body
+            body: JSON.stringify({ apiKey, selectedLanguage, selectedModel }) // Data to be sent in the request body
         });
 
         // Parse the JSON response from the server
@@ -31,8 +31,8 @@ export async function saveSettings(apiKey, selectedLanguage) {
     }
 }
 
-// Function to load settings (API key and selected language) from the server
-export async function loadSettings(choicesInstance) {
+// Function to load settings (API key, selected language, and selected model) from the server
+export async function loadSettings(choicesInstance, modelChoicesInstance) {
     try {
         // Send a GET request to fetch the settings
         const response = await fetch('/get-settings');
@@ -45,6 +45,8 @@ export async function loadSettings(choicesInstance) {
             document.getElementById('apiKey').value = result.apiKey;
             // Update the Choices.js instance with the selected language
             choicesInstance.setChoiceByValue(result.selectedLanguage);
+            // Update the Choices.js instance with the selected model
+            modelChoicesInstance.setChoiceByValue(result.selectedModel);
         } else {
             // Log an error message if the response was not ok
             console.error('Error fetching settings:', result.message);
