@@ -47,6 +47,8 @@ export async function loadSettings(choicesInstance, modelChoicesInstance) {
             choicesInstance.setChoiceByValue(result.selectedLanguage);
             // Update the Choices.js instance with the selected model
             modelChoicesInstance.setChoiceByValue(result.selectedModel);
+            // Store the selected model globally or in a variable accessible to the translation process
+            window.selectedModel = result.selectedModel;
         } else {
             // Log an error message if the response was not ok
             console.error('Error fetching settings:', result.message);
@@ -56,6 +58,7 @@ export async function loadSettings(choicesInstance, modelChoicesInstance) {
         console.error('Error fetching settings:', error);
     }
 }
+
 
 // Function to set event listeners for tab navigation
 export function setTabListeners() {

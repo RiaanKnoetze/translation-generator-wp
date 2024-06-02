@@ -37,6 +37,7 @@ const pluralFormsMapping = {
 };
 
 // Main function to process the content for translation
+// Main function to process the content for translation
 export async function processContent(content, excludedTerms, originalFileName, startTime, selectedLanguage) {
     const lines = content.split('\n'); // Split the content into lines
     const normalizedExclusions = excludedTerms.map(term => term.toLowerCase()); // Normalize exclusions to lowercase
@@ -60,7 +61,8 @@ export async function processContent(content, excludedTerms, originalFileName, s
     normalizedExclusions.push(pluginName.toLowerCase()); // Add plugin name to exclusions
     exclusionMap.set(pluginName.toLowerCase(), pluginName); // Add to exclusion map
 
-    const header = createHeader(pluginName, revisionDate, selectedLanguage); // Create the header for the translation file
+    const selectedModel = window.selectedModel || 'gpt-4o'; // Use the selected model or default to gpt-4o
+    const header = createHeader(pluginName, revisionDate, selectedLanguage, selectedModel); // Create the header for the translation file
     translatedLines.push(header); // Add the header to the translated lines
 
     // Process singular translations
@@ -85,7 +87,7 @@ export async function processContent(content, excludedTerms, originalFileName, s
 }
 
 // Function to create the header for the translation file
-function createHeader(pluginName, revisionDate, selectedLanguage) {
+function createHeader(pluginName, revisionDate, selectedLanguage, selectedModel) {
     const pluralForms = pluralFormsMapping[selectedLanguage] || "nplurals=2; plural=(n != 1);"; // Default to English plural forms if not found
     return `# Translation of Plugins - ${pluginName} in ${selectedLanguage}
 # This file is distributed under the same license as the Plugins - ${pluginName} package.
@@ -96,7 +98,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\\n"
 "Content-Transfer-Encoding: 8bit\\n"
 "Plural-Forms: ${pluralForms}\\n"
-"X-Generator: Translation Generator/1.0.0\\n"
+"X-Generator: Translation Generator: ${selectedModel}\\n"
 "Language: ${selectedLanguage}\\n"
 "Project-Id-Version: Plugins - ${pluginName}\\n"
 `;
