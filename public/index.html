@@ -28,7 +28,6 @@
                         <span>Translation Generator WP</span>
                         <span class="text-right text-gray-300 text-xs font-normal">v1.2</span>
                     </h1>
-                    <textarea id="excludedTerms" placeholder="Enter terms to exclude from translation, separated by commas" class="block w-full p-4 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" rows="4"></textarea>
                     <div class="flex items-center space-x-4">
                         <label for="fileUpload" class="flex-1 flex items-center justify-center px-4 py-3 text-sm font-medium text-white bg-blue-500 rounded-lg cursor-pointer hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             <i class="fas fa-upload mr-2"></i> Choose .POT File
@@ -94,6 +93,12 @@
                                         <option value="he_IL">Hebrew</option>
                                         <option value="ko_KR">Korean</option>
                                     </select>
+                                </dd>
+                            </div>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 excludedTerms">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Excluded Terms</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                    <textarea id="excludedTerms" placeholder="Enter terms to exclude from translation, separated by commas" class="block w-full p-4 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" rows="4"></textarea>
                                 </dd>
                             </div>
                         </dl>
