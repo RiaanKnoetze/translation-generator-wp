@@ -1,4 +1,4 @@
-import { applyFixes, updateProgress, updateTokensUsed, isExcludedTerm, formatPluginName, saveTranslatedFile } from './utils.js';
+import { applyFixes, updateProgress, updateTokensUsed, isExcludedTerm, formatPluginName, saveTranslatedFile, getTokenCount } from './utils.js';
 
 // Sections to skip during translation
 const skipTranslationSections = [
@@ -37,6 +37,7 @@ const pluralFormsMapping = {
 };
 
 // Main function to process the content for translation
+// Main function to process the content for translation
 export async function processContent(content, excludedTerms, originalFileName, startTime, selectedLanguage) {
     const lines = content.split('\n'); // Split the content into lines
     const normalizedExclusions = excludedTerms.map(term => term.toLowerCase()); // Normalize exclusions to lowercase
@@ -47,6 +48,8 @@ export async function processContent(content, excludedTerms, originalFileName, s
     let batch = []; // Array to hold a batch of lines for translation
     const batchSize = 10; // Define the size of each batch
     let totalTranslations = 0; // Counter for total translations
+    let inputTokens = 0; // Counter for input tokens
+    let outputTokens = 0; // Counter for output tokens
     const totalStrings = lines.filter(line => line.startsWith('msgid')).length; // Count total strings to be translated
 
     updateProgress(0, totalStrings, startTime); // Initialize progress update
@@ -58,24 +61,33 @@ export async function processContent(content, excludedTerms, originalFileName, s
     normalizedExclusions.push(pluginName.toLowerCase()); // Add plugin name to exclusions
     exclusionMap.set(pluginName.toLowerCase(), pluginName); // Add to exclusion map
 
-    const header = createHeader(pluginName, revisionDate, selectedLanguage); // Create the header for the translation file
+    const selectedModel = window.selectedModel || 'gpt-4o'; // Use the selected model or default to gpt-4o
+    const header = createHeader(pluginName, revisionDate, selectedLanguage, selectedModel); // Create the header for the translation file
     translatedLines.push(header); // Add the header to the translated lines
 
     // Process singular translations
-    translatedLines = await processSingularTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage);
+    const singularResult = await processSingularTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens);
+    translatedLines = singularResult.translatedLines;
+    inputTokens = singularResult.inputTokens;
+    outputTokens = singularResult.outputTokens;
+
     // Remove invalid plural sections
     translatedLines = removeInvalidPluralSections(translatedLines);
+
     // Process plural translations
-    translatedLines = await processPluralTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage);
+    const pluralResult = await processPluralTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens);
+    translatedLines = pluralResult.translatedLines;
+    inputTokens = pluralResult.inputTokens;
+    outputTokens = pluralResult.outputTokens;
 
     updateProgress(totalStrings, totalStrings, startTime); // Final progress update
-    updateTokensUsed(totalTranslations * 2, totalTranslations * 2); // Update token usage
+    updateTokensUsed(inputTokens, outputTokens); // Update token usage
 
     return { translatedContent: translatedLines.join('\n'), selectedLanguage }; // Return the translated content and selected language
 }
 
 // Function to create the header for the translation file
-function createHeader(pluginName, revisionDate, selectedLanguage) {
+function createHeader(pluginName, revisionDate, selectedLanguage, selectedModel) {
     const pluralForms = pluralFormsMapping[selectedLanguage] || "nplurals=2; plural=(n != 1);"; // Default to English plural forms if not found
     return `# Translation of Plugins - ${pluginName} in ${selectedLanguage}
 # This file is distributed under the same license as the Plugins - ${pluginName} package.
@@ -86,14 +98,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\\n"
 "Content-Transfer-Encoding: 8bit\\n"
 "Plural-Forms: ${pluralForms}\\n"
-"X-Generator: Translation Generator/1.0.0\\n"
+"X-Generator: Translation Generator: ${selectedModel}\\n"
 "Language: ${selectedLanguage}\\n"
 "Project-Id-Version: Plugins - ${pluginName}\\n"
 `;
 }
 
 // Function to process singular translations
-async function processSingularTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage) {
+async function processSingularTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens) {
     let metadata = []; // Array to hold metadata lines
     let msgidLine = ''; // Variable to hold the msgid line
     let skipSection = false; // Flag to indicate if the section should be skipped
@@ -140,7 +152,10 @@ async function processSingularTranslations(lines, translatedLines, normalizedExc
             msgidLine = ''; // Clear msgid line
 
             if (batch.length === batchSize) {
-                translatedLines = await translateBatch(batch, translatedLines, exclusionMap, selectedLanguage); // Translate the batch
+                const result = await translateBatch(batch, translatedLines, exclusionMap, selectedLanguage); // Translate the batch
+                translatedLines = result.translatedLines;
+                inputTokens += result.inputTokens;
+                outputTokens += result.outputTokens;
                 totalTranslations += batch.length; // Update total translations
                 updateProgress(totalTranslations, totalStrings, startTime); // Update progress
                 batch = []; // Clear batch
@@ -149,16 +164,19 @@ async function processSingularTranslations(lines, translatedLines, normalizedExc
     }
 
     if (batch.length > 0) {
-        translatedLines = await translateBatch(batch, translatedLines, exclusionMap, selectedLanguage); // Translate remaining batch
+        const result = await translateBatch(batch, translatedLines, exclusionMap, selectedLanguage); // Translate remaining batch
+        translatedLines = result.translatedLines;
+        inputTokens += result.inputTokens;
+        outputTokens += result.outputTokens;
         totalTranslations += batch.length; // Update total translations
         updateProgress(totalTranslations, totalStrings, startTime); // Update progress
     }
 
-    return translatedLines;
+    return { translatedLines, inputTokens, outputTokens };
 }
 
 // Function to process plural translations
-async function processPluralTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage) {
+async function processPluralTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens) {
     let metadata = []; // Array to hold metadata lines
     let msgidLine = ''; // Variable to hold the msgid line
     let msgidPluralLine = ''; // Variable to hold the msgid_plural line
@@ -213,7 +231,10 @@ async function processPluralTranslations(lines, translatedLines, normalizedExclu
             msgidPluralLine = ''; // Clear msgid_plural line
 
             if (batch.length === batchSize) {
-                translatedLines = await translatePluralBatch(batch, translatedLines, exclusionMap, selectedLanguage); // Translate the batch
+                const result = await translatePluralBatch(batch, translatedLines, exclusionMap, selectedLanguage); // Translate the batch
+                translatedLines = result.translatedLines;
+                inputTokens += result.inputTokens;
+                outputTokens += result.outputTokens;
                 totalTranslations += batch.length; // Update total translations
                 updateProgress(totalTranslations, totalStrings, startTime); // Update progress
                 batch = []; // Clear batch
@@ -222,17 +243,23 @@ async function processPluralTranslations(lines, translatedLines, normalizedExclu
     }
 
     if (batch.length > 0) {
-        translatedLines = await translatePluralBatch(batch, translatedLines, exclusionMap, selectedLanguage); // Translate remaining batch
+        const result = await translatePluralBatch(batch, translatedLines, exclusionMap, selectedLanguage); // Translate remaining batch
+        translatedLines = result.translatedLines;
+        inputTokens += result.inputTokens;
+        outputTokens += result.outputTokens;
         totalTranslations += batch.length; // Update total translations
         updateProgress(totalTranslations, totalStrings, startTime); // Update progress
     }
 
-    return translatedLines;
+    return { translatedLines, inputTokens, outputTokens };
 }
 
 // Function to translate a batch of singular texts
 async function translateBatch(batch, translatedLines, exclusionMap, selectedLanguage) {
     const translations = await translateTexts(batch.map(item => item.text), selectedLanguage); // Translate the batch of texts
+    const inputTokens = batch.reduce((sum, item) => sum + getTokenCount(item.text), 0); // Calculate input tokens
+    const outputTokens = translations.reduce((sum, translation) => sum + getTokenCount(translation), 0); // Calculate output tokens
+    const combinedTokens = inputTokens + outputTokens;
 
     batch.forEach((item, index) => {
         let translation = translations[index]; // Get the translated text
@@ -243,13 +270,17 @@ async function translateBatch(batch, translatedLines, exclusionMap, selectedLang
         translatedLines.push(''); // Add empty line
     });
 
-    return translatedLines;
+    console.log(`Combined tokens: ${combinedTokens}, Cost: $${((inputTokens / 1000) * 0.005 + (outputTokens / 1000) * 0.015).toFixed(5)}`);
+    return { translatedLines, inputTokens, outputTokens };
 }
+
 
 // Function to translate a batch of plural texts
 async function translatePluralBatch(batch, translatedLines, exclusionMap, selectedLanguage) {
     const translations = await translateTexts(batch.map(item => item.text), selectedLanguage); // Translate the batch of singular texts
     const pluralTranslations = await translateTexts(batch.map(item => item.pluralText), selectedLanguage); // Translate the batch of plural texts
+    const inputTokens = batch.reduce((sum, item) => sum + getTokenCount(item.text) + getTokenCount(item.pluralText), 0); // Calculate input tokens
+    const outputTokens = translations.reduce((sum, translation) => sum + getTokenCount(translation), 0) + pluralTranslations.reduce((sum, translation) => sum + getTokenCount(translation), 0); // Calculate output tokens
 
     batch.forEach((item, index) => {
         let translation = translations[index]; // Get the translated singular text
@@ -265,7 +296,9 @@ async function translatePluralBatch(batch, translatedLines, exclusionMap, select
         translatedLines.push(''); // Add empty line
     });
 
-    return translatedLines;
+    console.log(`Input tokens: ${inputTokens}, Output tokens: ${outputTokens}, Cost: $${((inputTokens / 1000) * 0.005 + (outputTokens / 1000) * 0.015).toFixed(2)}`);
+
+    return { translatedLines, inputTokens, outputTokens };
 }
 
 // Function to remove invalid plural sections from the lines

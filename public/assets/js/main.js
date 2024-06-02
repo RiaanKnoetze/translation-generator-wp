@@ -4,13 +4,15 @@ import { initializeFileCheckIcon } from './translator.js';
 import { saveSettings, loadSettings, setTabListeners } from './settings.js';
 
 let choicesInstance;
+let modelChoicesInstance;
 
 // Function to initialize event listeners once the DOM content is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Get references to the DOM elements for the save button, API key input, and language select dropdown
+    // Get references to the DOM elements for the save button, API key input, language select dropdown, and model select dropdown
     const saveBtn = document.getElementById('saveBtn');
     const apiKeyInput = document.getElementById('apiKey');
     const languageSelect = document.getElementById('languageSelect');
+    const modelSelect = document.getElementById('modelSelect');
 
     // Initialize file upload functionality
     initializeFileUpload();
@@ -24,8 +26,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the language select dropdown with Choices.js and store the instance
     choicesInstance = initializeLanguageSelect();
 
-    // Load the settings (API key and selected language) on page load
-    loadSettings(choicesInstance).then(() => {
+    // Initialize the model select dropdown with Choices.js and store the instance
+    modelChoicesInstance = new Choices(modelSelect, { removeItemButton: true });
+
+    // Load the settings (API key, selected language, and selected model) on page load
+    loadSettings(choicesInstance, modelChoicesInstance).then(() => {
         // Send the language mapping to the server after loading the settings
         sendLanguageMapping();
     });
@@ -63,7 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
     saveBtn.addEventListener('click', () => {
         const apiKey = apiKeyInput.value;
         const selectedLanguage = languageSelect.value;
-        saveSettings(apiKey, selectedLanguage).then(() => {
+        const selectedModel = modelSelect.value;
+        saveSettings(apiKey, selectedLanguage, selectedModel).then(() => {
             sendLanguageMapping();
         });
     });

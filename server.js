@@ -20,13 +20,14 @@ const openai = new OpenAI({
 // In-memory storage for language mappings
 let languageMapping = {};
 
-// Route to handle saving the API key and selected language
+// Route to handle saving the API key, selected language, and selected model
 app.post('/save-settings', (req, res) => {
     const apiKey = req.body.apiKey;
     const selectedLanguage = req.body.selectedLanguage;
+    const selectedModel = req.body.selectedModel;
 
-    if (!apiKey || !selectedLanguage) {
-        return res.status(400).json({ message: 'API key and selected language are required' });
+    if (!apiKey || !selectedLanguage || !selectedModel) {
+        return res.status(400).json({ message: 'API key, selected language, and selected model are required' });
     }
 
     const envFilePath = path.resolve(__dirname, '.env');
@@ -38,9 +39,10 @@ app.post('/save-settings', (req, res) => {
             envConfig = dotenv.parse(fs.readFileSync(envFilePath));
         }
 
-        // Update the API key and selected language
+        // Update the API key, selected language, and selected model
         envConfig.OPENAI_API_KEY = apiKey;
         envConfig.SELECTED_LANGUAGE = selectedLanguage;
+        envConfig.SELECTED_MODEL = selectedModel;
 
         // Write back to the .env file
         const envString = Object.entries(envConfig).map(([key, value]) => `${key}=${value}`).join('\n');
@@ -56,7 +58,7 @@ app.post('/save-settings', (req, res) => {
     }
 });
 
-// Route to get the API key and selected language
+// Route to get the API key, selected language, and selected model
 app.get('/get-settings', (req, res) => {
     const envFilePath = path.resolve(__dirname, '.env');
     let envConfig = {};
@@ -65,7 +67,8 @@ app.get('/get-settings', (req, res) => {
     }
     const apiKey = envConfig.OPENAI_API_KEY || '';
     const selectedLanguage = envConfig.SELECTED_LANGUAGE || 'en_US';
-    res.json({ apiKey, selectedLanguage });
+    const selectedModel = envConfig.SELECTED_MODEL || 'gpt-4o';
+    res.json({ apiKey, selectedLanguage, selectedModel });
 });
 
 // Route to receive language mapping from frontend
@@ -84,10 +87,12 @@ app.post('/translate', async (req, res) => {
             return res.status(400).json({ error: 'Unsupported language code' });
         }
 
+        const model = process.env.SELECTED_MODEL || 'gpt-4o'; // Use the selected model or default to gpt-4
+
         const translations = await Promise.all(texts.map(text => {
             return openai.chat.completions.create({
-                model: "gpt-4", // Use the latest model
-                messages: [{ role: "user", content: `Translate the following text to ${languageName}. When needed, use the formal form of "you". Please translate only the text and don't write anything else. Text to translate: ${text}` }]
+                model: model, // Use the selected model
+                messages: [{ role: "user", content: `Translate the following text to ${languageName}. When needed, use the formal form of "you". Please translate only the text and don't write anything else. Don't add extra periods at the end of sentences if the original doesn't have them. Text to translate: ${text}` }]
             }).then(response => response.choices[0].message.content.trim());
         }));
         res.json({ translatedTexts: translations });
@@ -96,7 +101,6 @@ app.post('/translate', async (req, res) => {
         res.status(500).json({ error: 'Failed to process translations' });
     }
 });
-
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
