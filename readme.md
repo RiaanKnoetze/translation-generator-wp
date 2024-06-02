@@ -2,7 +2,8 @@
 # Translation Generator WP
 
 ![Translation Generator WP](translation-generator-wp.png)
-![Translation Generator WP - Settings](translation-generator-wp-settings.png)
+
+![Translation Generator WP - Settings](translation-generator-settings.png) 
 
 ## Project Overview
 
@@ -82,7 +83,7 @@ Follow these steps to set up the project:
 1. Ensure the target language and model are selected in the "Settings" tab.
 2. Enter any terms you want to exclude from translation in the "Excluded Terms" textarea, separated by commas.
 3. Click the "Translate" button in the "App" tab.
-4. The progress bar will display the translation progress.
+4. The progress bar will display the translation progress. The translated strings area will show the string translation process.
 5. Once completed, the translated file will be automatically downloaded.
 
 ## Additional Information
