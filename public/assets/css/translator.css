@@ -47,7 +47,8 @@
     display: block;
 }
 
-#apiKey {
+#apiKey,
+#batchSize {
     padding-left: 0.5em;
 }
 

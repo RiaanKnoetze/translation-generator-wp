@@ -42,6 +42,11 @@ export function applyFixes(original, translation, exclusionMap) {
         translation = translation.trim().slice(0, -1);
     }
 
+    // Add period if the original ends with one and the translation does not
+    if (original.trim().endsWith('.') && !translation.trim().endsWith('.')) {
+        translation = `${translation.trim()}.`;
+    }
+
     // Escape double quotes in the translation
     translation = translation.replace(/"/g, '\\"');
 

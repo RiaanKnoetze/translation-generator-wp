@@ -61,7 +61,10 @@ export function initializeTranslateButton() {
             const originalFileName = file.name.replace('.pot', '');
             const selectedLanguage = languageSelect.value; // Get the selected language
 
-            const { translatedContent } = await processContent(content, excludedTerms, originalFileName, startTime, selectedLanguage);
+            // Get batch size from global settings
+            const batchSize = parseInt(window.settings.batchSize, 10) || 10;
+
+            const { translatedContent } = await processContent(content, excludedTerms, originalFileName, startTime, selectedLanguage, batchSize);
             saveTranslatedFile(translatedContent, originalFileName, selectedLanguage);
 
             setTimeout(() => {
