@@ -1,4 +1,4 @@
-import { applyFixes, updateProgress, updateTokensUsed, isExcludedTerm, formatPluginName, saveTranslatedFile, getTokenCount } from './utils.js';
+import { applyFixes, updateProgress, updateTokensUsed, isExcludedTerm, formatPluginName, saveTranslatedFile, getTokenCount, showNotification } from './utils.js';
 
 // Sections to skip during translation
 const skipTranslationSections = [
@@ -379,6 +379,6 @@ async function translateTexts(texts, selectedLanguage) {
         return data.translatedTexts; // Return the translated texts
     } catch (error) {
         console.error('Failed to translate texts:', error); // Log any errors that occur during the request
-        alert('Failed to translate texts. Check the console for more details.'); // Alert the user about the error
+        showNotification('Failed to translate texts. Check the console for more details.', 'red'); // Show error notification
     }
 }

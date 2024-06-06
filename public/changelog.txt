@@ -3,6 +3,7 @@
 xxx - version 1.4
 * New - Add batch size input field
 * New - Add accessibility improvements for screen readers
+* Fix - Use alert notices instead of browser alert modals
 
 2024-06-03 - version 1.3
 * New: Add project tagline

@@ -139,10 +139,25 @@ export function saveTranslatedFile(translatedContent, originalFileName, selected
     link.click();
 }
 
-export function showNotification(message, type = 'green') {
-    const notificationContainer = document.getElementById('notification-container');
+export function showNotification(message, type = 'green', containerId = 'translate-notification-container') {
+    let notificationContainer = document.getElementById(containerId);
+
+    // If the specified container does not exist, fall back to the translate-notification-container
+    if (!notificationContainer) {
+        console.warn(`Notification container with ID ${containerId} not found. Falling back to default container.`);
+        notificationContainer = document.getElementById('translate-notification-container');
+    }
+
+    // Ensure the fallback container also exists
+    if (!notificationContainer) {
+        console.error('No valid notification container found.');
+        return;
+    }
+
+    const notificationId = 'notification-' + Date.now(); // Unique ID for each notification
+
     notificationContainer.innerHTML = `
-        <div class="rounded-md bg-${type}-50 p-4" role="alert" aria-live="assertive">
+        <div id="${notificationId}" class="rounded-md bg-${type}-50 p-4" role="alert" aria-live="assertive" aria-atomic="true" tabindex="-1" style="outline: none;">
           <div class="flex">
             <div class="flex-shrink-0">
               <svg class="h-5 w-5 text-${type}-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -166,12 +181,20 @@ export function showNotification(message, type = 'green') {
         </div>
     `;
 
-    document.getElementById('dismissBtn').addEventListener('click', () => {
+    const dismissBtn = document.getElementById('dismissBtn');
+    const notification = document.getElementById(notificationId);
+
+    dismissBtn.addEventListener('click', () => {
         notificationContainer.innerHTML = '';
     });
+
+    notification.focus();
 
     const tabTranslate = document.getElementById('tabTranslate');
     tabTranslate.addEventListener('click', () => {
         notificationContainer.innerHTML = '';
     });
 }
+
+
+

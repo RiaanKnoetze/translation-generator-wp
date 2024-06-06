@@ -1,6 +1,6 @@
 import { showNotification } from './utils.js';
 
-// Function to save settings (API key, selected language, and selected model) to the server
+// Function to save settings (API key, selected language, selected model, and batch size) to the server
 export async function saveSettings(apiKey, selectedLanguage, selectedModel, batchSize) {
     try {
         // Send a POST request to save the settings
@@ -17,21 +17,21 @@ export async function saveSettings(apiKey, selectedLanguage, selectedModel, batc
 
         // Check if the request was successful
         if (response.ok) {
-            // Show a success notification
-            showNotification(result.message);
+            // Show a success notification in the settings notification container
+            showNotification(result.message, 'green', 'settings-notification-container');
         } else {
             // Show an error notification if the response was not ok
-            showNotification('Error: ' + result.message, 'red');
+            showNotification('Error: ' + result.message, 'red', 'settings-notification-container');
         }
     } catch (error) {
         // Log any errors that occur during the request
         console.error('Error saving settings:', error);
         // Show an error notification
-        showNotification('Error: ' + error.message, 'red');
+        showNotification('Error: ' + error.message, 'red', 'settings-notification-container');
     }
 }
 
-// Function to fetch settings
+// Function to load settings (API key, selected language, selected model, and batch size) from the server
 export async function loadSettings(choicesInstance, modelChoicesInstance) {
     try {
         // Send a GET request to fetch the settings
@@ -47,7 +47,7 @@ export async function loadSettings(choicesInstance, modelChoicesInstance) {
             choicesInstance.setChoiceByValue(result.selectedLanguage);
             // Update the Choices.js instance with the selected model
             modelChoicesInstance.setChoiceByValue(result.selectedModel);
-            // Update the batch size input field with the fetched batch size
+            // Update the batch size input field
             document.getElementById('batchSize').value = result.batchSize;
             // Store the settings globally or in a variable accessible to the translation process
             window.settings = {

@@ -1,5 +1,5 @@
 import { processContent } from './translator.js';
-import { saveTranslatedFile, calculateStringsInFile, resetProgressAndTokens, resetExcludedTerms, addPluginNameToExclusions } from './utils.js';
+import { saveTranslatedFile, calculateStringsInFile, resetProgressAndTokens, resetExcludedTerms, addPluginNameToExclusions, showNotification } from './utils.js';
 
 export function initializeFileUpload() {
     const uploadInput = document.getElementById('fileUpload');
@@ -7,6 +7,7 @@ export function initializeFileUpload() {
     const fileDisplayContainer = document.getElementById('fileDisplayContainer');
     const translateButton = document.getElementById('translateBtn');
     const fileCheckIcon = document.getElementById('fileCheckIcon');
+    const translateNotificationContainer = document.getElementById('translate-notification-container'); // New notification container
     let originalFileName = '';
 
     uploadInput.addEventListener('change', function(event) {
@@ -23,7 +24,7 @@ export function initializeFileUpload() {
             addPluginNameToExclusions(originalFileName);
             calculateStringsInFile(file);
         } else {
-            alert('Please upload a .POT file.');
+            showNotification('Please upload a .POT file.', 'red', translateNotificationContainer);
             translateButton.disabled = true;
             fileNameDisplay.textContent = '';
             fileDisplayContainer.classList.add('hidden');

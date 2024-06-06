@@ -15,7 +15,7 @@
     <div class="flex w-full max-w-4xl">
         <!-- Vertical Tabs -->
         <div class="tabs" role="tablist">
-            <button id="tabTranslate" class="active rounded-tl-lg rounded-bl-lg shadow-md bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" role="tab" aria-selected="true" aria-controls="translateContainer">App</button>
+            <button id="tabTranslate" class="active rounded-tl-lg rounded-bl-lg shadow-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" role="tab" aria-selected="true" aria-controls="translateContainer">App</button>
             <button id="tabSettings" class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" role="tab" aria-selected="false" aria-controls="settingsContainer">Settings</button>
         </div>
         
@@ -29,6 +29,8 @@
                         <span class="text-right text-gray-300 text-xs font-normal">v1.4</span>
                     </h1>
                     <p class="text-gray-600">Effortlessly translate your WordPress plugin language files with precision and ease.</p>
+                    <!-- Notification Container -->
+                    <div id="translate-notification-container" class="mb-4"></div>
                     <div class="flex items-center space-x-4">
                         <label for="fileUpload" class="flex-1 flex items-center justify-center px-4 py-3 text-sm font-medium text-white bg-blue-500 rounded-lg cursor-pointer hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             <i class="fas fa-upload mr-2" aria-hidden="true"></i> Choose .POT File
@@ -60,7 +62,7 @@
                 <div class="max-w-2xl w-full bg-white shadow-md rounded-lg p-8 space-y-6 relative">
                     <h1 class="text-2xl font-bold text-gray-800">Settings</h1>
                     <!-- Notification Container -->
-                    <div id="notification-container" class="mb-4"></div>
+                    <div id="settings-notification-container" class="mb-4"></div>
 
                     <div class="mt-6 border-t border-gray-100">
                         <dl class="divide-y divide-gray-100">
@@ -110,13 +112,13 @@
                                     <span id="modelSelectDesc" class="sr-only">Select the GPT model to use for translation</span>
                                 </dd>
                             </div>
-                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 batchSize">
-                                <dt class="text-sm font-medium leading-6 text-gray-900">String Batch Size</dt>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiBatchSize">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Batch Size</dt>
                                 <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                                    <input type="number" name="batchSize" id="batchSize" min="1" value="10" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6" aria-describedby="batchSizeDesc">
-                                    <span id="batchSizeDesc" class="sr-only">Enter the number of source strings to process per batch</span>
+                                    <input type="number" id="batchSize" min="1" value="10" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6" aria-describedby="batchSizeDesc">
+                                    <span id="batchSizeDesc" class="sr-only">Enter the batch size for translation</span>
                                 </dd>
-                            </div>                            
+                            </div>
                             <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 excludedTerms">
                                 <dt class="text-sm font-medium leading-6 text-gray-900">Excluded Terms</dt>
                                 <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
