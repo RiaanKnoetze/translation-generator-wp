@@ -34,6 +34,10 @@
                     <div class="flex items-center space-x-4">
                         <label for="fileUpload" class="flex-1 flex items-center justify-center px-4 py-3 text-sm font-medium text-white bg-blue-500 rounded-lg cursor-pointer hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             <i class="fas fa-upload mr-2" aria-hidden="true"></i> Choose .POT File
+                            <div class="tooltip ml-2">
+                                <i class="fas fa-info-circle text-gray-300"></i>
+                                <span class="tooltiptext">Upload a .POT file for translation.</span>
+                            </div>
                         </label>
                         <input type="file" id="fileUpload" class="hidden" aria-describedby="fileUploadDesc">
                         <button id="translateBtn" disabled class="flex-1 px-4 py-3 text-sm font-medium text-white bg-green-500 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-300">Translate</button>
@@ -67,14 +71,24 @@
                     <div class="mt-6 border-t border-gray-100">
                         <dl class="divide-y divide-gray-100">
                             <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiKey">
-                                <dt class="text-sm font-medium leading-6 text-gray-900">OpenAI API Key</dt>
+                                <dt class="text-sm font-medium leading-6 text-gray-900">OpenAI API Key
+                                    <div class="tooltip ml-2">
+                                        <i class="fas fa-info-circle text-gray-300"></i>
+                                        <span class="tooltiptext">Enter your OpenAI API key.</span>
+                                    </div>
+                                </dt>
                                 <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                                     <input type="password" name="apiKey" id="apiKey" autocomplete="off" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6" aria-describedby="apiKeyDesc">
                                     <span id="apiKeyDesc" class="sr-only">Enter your OpenAI API key</span>
                                 </dd>
                             </div>
                             <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiLanguages">
-                                <dt class="text-sm font-medium leading-6 text-gray-900">Target Language</dt>
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Target Language
+                                    <div class="tooltip ml-2">
+                                        <i class="fas fa-info-circle text-gray-300"></i>
+                                        <span class="tooltiptext">Select the target language for translation.</span>
+                                    </div>
+                                </dt>
                                 <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                                     <select id="languageSelect" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6" aria-describedby="languageSelectDesc">
                                         <option value="en_US">English (United States)</option>
@@ -102,7 +116,12 @@
                                 </dd>
                             </div>
                             <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiModel">
-                                <dt class="text-sm font-medium leading-6 text-gray-900">GPT Model</dt>
+                                <dt class="text-sm font-medium leading-6 text-gray-900">GPT Model
+                                    <div class="tooltip ml-2">
+                                        <i class="fas fa-info-circle text-gray-300"></i>
+                                        <span class="tooltiptext">Select the GPT model to use for translation.</span>
+                                    </div>
+                                </dt>
                                 <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                                     <select id="modelSelect" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6" aria-describedby="modelSelectDesc">
                                         <option value="gpt-4o">GPT-4o (Default)</option>
@@ -113,14 +132,24 @@
                                 </dd>
                             </div>
                             <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiBatchSize">
-                                <dt class="text-sm font-medium leading-6 text-gray-900">Batch Size</dt>
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Batch Size
+                                    <div class="tooltip ml-2">
+                                        <i class="fas fa-info-circle text-gray-300"></i>
+                                        <span class="tooltiptext">Enter the batch size for translation.</span>
+                                    </div>
+                                </dt>
                                 <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                                     <input type="number" id="batchSize" min="1" value="10" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6" aria-describedby="batchSizeDesc">
                                     <span id="batchSizeDesc" class="sr-only">Enter the batch size for translation</span>
                                 </dd>
                             </div>
                             <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 excludedTerms">
-                                <dt class="text-sm font-medium leading-6 text-gray-900">Excluded Terms</dt>
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Excluded Terms
+                                    <div class="tooltip ml-2">
+                                        <i class="fas fa-info-circle text-gray-300"></i>
+                                        <span class="tooltiptext">Enter terms to exclude from translation, separated by commas.</span>
+                                    </div>
+                                </dt>
                                 <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                                     <textarea id="excludedTerms" placeholder="Enter terms to exclude from translation, separated by commas" class="block w-full p-4 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" rows="4" aria-describedby="excludedTermsDesc"></textarea>
                                     <span id="excludedTermsDesc" class="sr-only">Enter terms to exclude from translation, separated by commas</span>
