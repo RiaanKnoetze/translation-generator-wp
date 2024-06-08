@@ -1,7 +1,7 @@
 import { showNotification } from './utils.js';
 
-// Function to save settings (API key, selected language, selected model, and batch size) to the server
-export async function saveSettings(apiKey, selectedLanguage, selectedModel, batchSize) {
+// Function to save settings (API key, selected languages, selected model, and batch size) to the server
+export async function saveSettings(apiKey, selectedLanguages, selectedModel, batchSize) {
     try {
         // Send a POST request to save the settings
         const response = await fetch('/save-settings', {
@@ -9,7 +9,7 @@ export async function saveSettings(apiKey, selectedLanguage, selectedModel, batc
             headers: {
                 'Content-Type': 'application/json' // Content type of the request
             },
-            body: JSON.stringify({ apiKey, selectedLanguage, selectedModel, batchSize }) // Data to be sent in the request body
+            body: JSON.stringify({ apiKey, selectedLanguages, selectedModel, batchSize }) // Data to be sent in the request body
         });
 
         // Parse the JSON response from the server
@@ -31,7 +31,7 @@ export async function saveSettings(apiKey, selectedLanguage, selectedModel, batc
     }
 }
 
-// Function to load settings (API key, selected language, selected model, and batch size) from the server
+// Function to load settings (API key, selected languages, selected model, and batch size) from the server
 export async function loadSettings(choicesInstance, modelChoicesInstance) {
     try {
         // Send a GET request to fetch the settings
@@ -43,8 +43,8 @@ export async function loadSettings(choicesInstance, modelChoicesInstance) {
         if (response.ok) {
             // Update the API key input field with the fetched API key
             document.getElementById('apiKey').value = result.apiKey;
-            // Update the Choices.js instance with the selected language
-            choicesInstance.setChoiceByValue(result.selectedLanguage);
+            // Update the Choices.js instance with the selected languages
+            choicesInstance.setChoiceByValue(result.selectedLanguages);
             // Update the Choices.js instance with the selected model
             modelChoicesInstance.setChoiceByValue(result.selectedModel);
             // Update the batch size input field

@@ -371,13 +371,13 @@ async function translateTexts(texts, selectedLanguage) {
             headers: {
                 'Content-Type': 'application/json' // Content type of the request
             },
-            body: JSON.stringify({ texts, language: selectedLanguage }) // Data to be sent in the request body
+            body: JSON.stringify({ texts, languages: [selectedLanguage] }) // Data to be sent in the request body
         });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json(); // Parse the JSON response from the server
-        return data.translatedTexts; // Return the translated texts
+        return data.translations[selectedLanguage]; // Return the translated texts
     } catch (error) {
         console.error('Failed to translate texts:', error); // Log any errors that occur during the request
         showNotification('Failed to translate texts. Check the console for more details.', 'red', 'translate-notification-container'); // Show error notification

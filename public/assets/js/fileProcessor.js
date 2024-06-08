@@ -41,7 +41,7 @@ export function initializeTranslateButton() {
         const progressBar = document.getElementById('progressBar');
         const uploadInput = document.getElementById('fileUpload');
         const excludedTermsInput = document.getElementById('excludedTerms');
-        const languageSelect = document.getElementById('languageSelect'); // Get the selected language
+        const languageSelect = document.getElementById('languageSelect'); // Get the selected languages
 
         // Reset progress bar
         progressBar.style.width = '0%';
@@ -60,13 +60,15 @@ export function initializeTranslateButton() {
             const excludedTerms = excludedTermsInput.value.split(',').map(term => term.trim());
             const startTime = new Date();
             const originalFileName = file.name.replace('.pot', '');
-            const selectedLanguage = languageSelect.value; // Get the selected language
+            const selectedLanguages = Array.from(languageSelect.selectedOptions).map(option => option.value); // Get the selected languages
 
             // Get batch size from global settings
             const batchSize = parseInt(window.settings.batchSize, 10) || 10;
 
-            const { translatedContent } = await processContent(content, excludedTerms, originalFileName, startTime, selectedLanguage, batchSize);
-            saveTranslatedFile(translatedContent, originalFileName, selectedLanguage);
+            for (const language of selectedLanguages) {
+                const { translatedContent } = await processContent(content, excludedTerms, originalFileName, startTime, language, batchSize);
+                saveTranslatedFile(translatedContent, originalFileName, language);
+            }
 
             setTimeout(() => {
                 progressContainer.classList.add('hide');
