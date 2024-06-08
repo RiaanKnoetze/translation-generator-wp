@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const apiKeyInput = document.getElementById('apiKey');
     const languageSelect = document.getElementById('languageSelect');
     const modelSelect = document.getElementById('modelSelect');
+    const batchSizeInput = document.getElementById('batchSize'); // Add batch size input reference
 
     // Initialize file upload functionality
     initializeFileUpload();
@@ -29,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the model select dropdown with Choices.js and store the instance
     modelChoicesInstance = new Choices(modelSelect, { removeItemButton: true });
 
-    // Load the settings (API key, selected language, and selected model) on page load
+    // Load the settings (API key, selected language, selected model, and batch size) on page load
     loadSettings(choicesInstance, modelChoicesInstance).then(() => {
         // Send the language mapping to the server after loading the settings
         sendLanguageMapping();
@@ -69,8 +70,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const apiKey = apiKeyInput.value;
         const selectedLanguage = languageSelect.value;
         const selectedModel = modelSelect.value;
-        saveSettings(apiKey, selectedLanguage, selectedModel).then(() => {
+        const batchSize = batchSizeInput.value; // Get batch size value
+        saveSettings(apiKey, selectedLanguage, selectedModel, batchSize).then(() => {
             sendLanguageMapping();
         });
     });
 });
+

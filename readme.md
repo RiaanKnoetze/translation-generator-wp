@@ -70,6 +70,7 @@ Follow these steps to set up the project:
 1. Navigate to the "Settings" tab.
 2. Enter your OpenAI API Key in the provided input field.
 3. Select the target language and GPT model from the dropdown menus.
+4. Choose the number of strings (i.e. sentences) to batch before sending to gpt for translation.
 4. Click "Save" to apply the settings.
 
 ### Uploading a .POT File

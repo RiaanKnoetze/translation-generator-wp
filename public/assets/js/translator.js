@@ -1,4 +1,4 @@
-import { applyFixes, updateProgress, updateTokensUsed, isExcludedTerm, formatPluginName, saveTranslatedFile, getTokenCount } from './utils.js';
+import { applyFixes, updateProgress, updateTokensUsed, isExcludedTerm, formatPluginName, saveTranslatedFile, getTokenCount, showNotification } from './utils.js';
 
 // Sections to skip during translation
 const skipTranslationSections = [
@@ -37,8 +37,7 @@ const pluralFormsMapping = {
 };
 
 // Main function to process the content for translation
-// Main function to process the content for translation
-export async function processContent(content, excludedTerms, originalFileName, startTime, selectedLanguage) {
+export async function processContent(content, excludedTerms, originalFileName, startTime, selectedLanguage, batchSize) {
     const lines = content.split('\n'); // Split the content into lines
     const normalizedExclusions = excludedTerms.map(term => term.toLowerCase()); // Normalize exclusions to lowercase
     const exclusionMap = new Map(); // Map to store original exclusions
@@ -46,7 +45,7 @@ export async function processContent(content, excludedTerms, originalFileName, s
 
     let translatedLines = []; // Array to hold translated lines
     let batch = []; // Array to hold a batch of lines for translation
-    const batchSize = 10; // Define the size of each batch
+    batchSize = batchSize || 10; // Use the passed batch size or default to 10
     let totalTranslations = 0; // Counter for total translations
     let inputTokens = 0; // Counter for input tokens
     let outputTokens = 0; // Counter for output tokens
@@ -61,7 +60,7 @@ export async function processContent(content, excludedTerms, originalFileName, s
     normalizedExclusions.push(pluginName.toLowerCase()); // Add plugin name to exclusions
     exclusionMap.set(pluginName.toLowerCase(), pluginName); // Add to exclusion map
 
-    const selectedModel = window.selectedModel || 'gpt-4o'; // Use the selected model or default to gpt-4o
+    const selectedModel = window.settings.selectedModel || 'gpt-4o'; // Use the selected model or default to gpt-4o
     const header = createHeader(pluginName, revisionDate, selectedLanguage, selectedModel); // Create the header for the translation file
     translatedLines.push(header); // Add the header to the translated lines
 
@@ -274,13 +273,13 @@ async function translateBatch(batch, translatedLines, exclusionMap, selectedLang
     return { translatedLines, inputTokens, outputTokens };
 }
 
-
 // Function to translate a batch of plural texts
 async function translatePluralBatch(batch, translatedLines, exclusionMap, selectedLanguage) {
     const translations = await translateTexts(batch.map(item => item.text), selectedLanguage); // Translate the batch of singular texts
     const pluralTranslations = await translateTexts(batch.map(item => item.pluralText), selectedLanguage); // Translate the batch of plural texts
     const inputTokens = batch.reduce((sum, item) => sum + getTokenCount(item.text) + getTokenCount(item.pluralText), 0); // Calculate input tokens
     const outputTokens = translations.reduce((sum, translation) => sum + getTokenCount(translation), 0) + pluralTranslations.reduce((sum, translation) => sum + getTokenCount(translation), 0); // Calculate output tokens
+    const combinedTokens = inputTokens + outputTokens;
 
     batch.forEach((item, index) => {
         let translation = translations[index]; // Get the translated singular text
@@ -296,7 +295,7 @@ async function translatePluralBatch(batch, translatedLines, exclusionMap, select
         translatedLines.push(''); // Add empty line
     });
 
-    console.log(`Input tokens: ${inputTokens}, Output tokens: ${outputTokens}, Cost: $${((inputTokens / 1000) * 0.005 + (outputTokens / 1000) * 0.015).toFixed(2)}`);
+    console.log(`Combined tokens: ${combinedTokens}, Cost: $${((inputTokens / 1000) * 0.005 + (outputTokens / 1000) * 0.015).toFixed(5)}`);
 
     return { translatedLines, inputTokens, outputTokens };
 }
@@ -381,6 +380,6 @@ async function translateTexts(texts, selectedLanguage) {
         return data.translatedTexts; // Return the translated texts
     } catch (error) {
         console.error('Failed to translate texts:', error); // Log any errors that occur during the request
-        alert('Failed to translate texts. Check the console for more details.'); // Alert the user about the error
+        showNotification('Failed to translate texts. Check the console for more details.', 'red', 'translate-notification-container'); // Show error notification
     }
 }

@@ -42,10 +42,52 @@ export function applyFixes(original, translation, exclusionMap) {
         translation = translation.trim().slice(0, -1);
     }
 
-    // Escape double quotes in the translation
-    translation = translation.replace(/"/g, '\\"');
+    // Add original ending punctuation if present
+    const endingPunctuation = getEndingPunctuation(original);
+    if (endingPunctuation && !translation.trim().endsWith(endingPunctuation)) {
+        translation = `${translation.trim()}${endingPunctuation}`;
+    }
+
+    // Escape double quotes in the translation, except inside certain HTML attributes
+    translation = escapeQuotesInHTML(translation);
 
     return translation;
+}
+
+// Helper function to get the ending punctuation of a string
+function getEndingPunctuation(text) {
+    const punctuation = ['.', ',', ':', ';', '!', ')', ']', "'", '"', '>', '»'];
+    const specialPunctuation = ['&raquo;'];
+
+    const trimmedText = text.trim();
+    const lastChar = trimmedText.slice(-1);
+
+    // Check if the last character is a common punctuation mark
+    if (punctuation.includes(lastChar)) {
+        return lastChar;
+    }
+
+    // Check if the last few characters match any special punctuation marks
+    for (let mark of specialPunctuation) {
+        if (trimmedText.endsWith(mark)) {
+            return mark;
+        }
+    }
+
+    return '';
+}
+
+// Helper function to escape quotes outside HTML tags and attributes
+function escapeQuotesInHTML(text) {
+    // Use a regular expression to match all HTML tags
+    return text.replace(/(<\/?[\w\s="/.':;#-\/\?]+>)/g, (match) => {
+        // If the match is an HTML tag, return it unchanged
+        if (match.startsWith('<') && match.endsWith('>')) {
+            return match;
+        }
+        // Otherwise, escape the double quote
+        return match.replace(/"/g, '\\"');
+    });
 }
 
 export function getTokenCount(text) {
@@ -84,8 +126,6 @@ export function updateTokensUsed(inputTokens, outputTokens) {
 
     tokensUsed.textContent = `Tokens used: ${combinedTokens} ($${totalCost.toFixed(5)})`;
 }
-
-
 
 export function resetProgressAndTokens() {
     const stringsTranslated = document.getElementById('stringsTranslated');
@@ -134,10 +174,25 @@ export function saveTranslatedFile(translatedContent, originalFileName, selected
     link.click();
 }
 
-export function showNotification(message, type = 'green') {
-    const notificationContainer = document.getElementById('notification-container');
+export function showNotification(message, type = 'green', containerId = 'translate-notification-container') {
+    let notificationContainer = document.getElementById(containerId);
+
+    // If the specified container does not exist, fall back to the translate-notification-container
+    if (!notificationContainer) {
+        console.warn(`Notification container with ID ${containerId} not found. Falling back to default container.`);
+        notificationContainer = document.getElementById('translate-notification-container');
+    }
+
+    // Ensure the fallback container also exists
+    if (!notificationContainer) {
+        console.error('No valid notification container found.');
+        return;
+    }
+
+    const notificationId = 'notification-' + Date.now(); // Unique ID for each notification
+
     notificationContainer.innerHTML = `
-        <div class="rounded-md bg-${type}-50 p-4">
+        <div id="${notificationId}" class="rounded-md bg-${type}-50 p-4" role="alert" aria-live="assertive" aria-atomic="true" tabindex="-1" style="outline: none;">
           <div class="flex">
             <div class="flex-shrink-0">
               <svg class="h-5 w-5 text-${type}-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -149,7 +204,7 @@ export function showNotification(message, type = 'green') {
             </div>
             <div class="ml-auto pl-3">
               <div class="-mx-1.5 -my-1.5">
-                <button type="button" id="dismissBtn" class="inline-flex rounded-md bg-${type}-50 p-1.5 text-${type}-500 hover:bg-${type}-100 focus:outline-none focus:ring-2 focus:ring-${type}-600 focus:ring-offset-2 focus:ring-offset-${type}-50">
+                <button type="button" id="dismissBtn" class="inline-flex rounded-md bg-${type}-50 p-1.5 text-${type}-500 hover:bg-${type}-100 focus:outline-none focus:ring-2 focus:ring-${type}-600 focus:ring-offset-2 focus:ring-offset-${type}-50" aria-label="Dismiss notification">
                   <span class="sr-only">Dismiss</span>
                   <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -161,9 +216,14 @@ export function showNotification(message, type = 'green') {
         </div>
     `;
 
-    document.getElementById('dismissBtn').addEventListener('click', () => {
+    const dismissBtn = document.getElementById('dismissBtn');
+    const notification = document.getElementById(notificationId);
+
+    dismissBtn.addEventListener('click', () => {
         notificationContainer.innerHTML = '';
     });
+
+    notification.focus();
 
     const tabTranslate = document.getElementById('tabTranslate');
     tabTranslate.addEventListener('click', () => {
