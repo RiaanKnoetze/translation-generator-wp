@@ -42,15 +42,39 @@ export function applyFixes(original, translation, exclusionMap) {
         translation = translation.trim().slice(0, -1);
     }
 
-    // Add period if the original ends with one and the translation does not
-    if (original.trim().endsWith('.') && !translation.trim().endsWith('.')) {
-        translation = `${translation.trim()}.`;
+    // Add original ending punctuation if present
+    const endingPunctuation = getEndingPunctuation(original);
+    if (endingPunctuation && !translation.trim().endsWith(endingPunctuation)) {
+        translation = `${translation.trim()}${endingPunctuation}`;
     }
 
     // Escape double quotes in the translation
     translation = translation.replace(/"/g, '\\"');
 
     return translation;
+}
+
+// Helper function to get the ending punctuation of a string
+function getEndingPunctuation(text) {
+    const punctuation = ['.', ',', ':', ';', '!', ')', ']', "'", '"', '>', '»'];
+    const specialPunctuation = ['&raquo;'];
+
+    const trimmedText = text.trim();
+    const lastChar = trimmedText.slice(-1);
+
+    // Check if the last character is a common punctuation mark
+    if (punctuation.includes(lastChar)) {
+        return lastChar;
+    }
+
+    // Check if the last few characters match any special punctuation marks
+    for (let mark of specialPunctuation) {
+        if (trimmedText.endsWith(mark)) {
+            return mark;
+        }
+    }
+
+    return '';
 }
 
 export function getTokenCount(text) {
@@ -89,8 +113,6 @@ export function updateTokensUsed(inputTokens, outputTokens) {
 
     tokensUsed.textContent = `Tokens used: ${combinedTokens} ($${totalCost.toFixed(5)})`;
 }
-
-
 
 export function resetProgressAndTokens() {
     const stringsTranslated = document.getElementById('stringsTranslated');
@@ -195,6 +217,3 @@ export function showNotification(message, type = 'green', containerId = 'transla
         notificationContainer.innerHTML = '';
     });
 }
-
-
-
