@@ -69,7 +69,7 @@
                             <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiKey">
                                 <dt class="text-sm font-medium leading-6 text-gray-900">OpenAI API Key
                                     <div class="tooltip ml-2">
-                                        <i class="fas fa-info-circle"></i>
+                                        <i class="fas fa-info-circle text-gray-400"></i>
                                         <span class="tooltiptext">Enter your OpenAI API key.</span>
                                     </div>
                                 </dt>
@@ -81,8 +81,8 @@
                             <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiLanguages">
                                 <dt class="text-sm font-medium leading-6 text-gray-900">Target Language
                                     <div class="tooltip ml-2">
-                                        <i class="fas fa-info-circle"></i>
-                                        <span class="tooltiptext">Select the target language for translation.</span>
+                                        <i class="fas fa-info-circle text-gray-400"></i>
+                                        <span class="tooltiptext">Select the language to translate to.</span>
                                     </div>
                                 </dt>
                                 <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -114,7 +114,7 @@
                             <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiModel">
                                 <dt class="text-sm font-medium leading-6 text-gray-900">GPT Model
                                     <div class="tooltip ml-2">
-                                        <i class="fas fa-info-circle"></i>
+                                        <i class="fas fa-info-circle text-gray-400"></i>
                                         <span class="tooltiptext">Select the GPT model to use for translation.</span>
                                     </div>
                                 </dt>
@@ -130,19 +130,19 @@
                             <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiBatchSize">
                                 <dt class="text-sm font-medium leading-6 text-gray-900">Batch Size
                                     <div class="tooltip ml-2">
-                                        <i class="fas fa-info-circle"></i>
+                                        <i class="fas fa-info-circle text-gray-400"></i>
                                         <span class="tooltiptext">Enter the batch size for translation.</span>
                                     </div>
                                 </dt>
                                 <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                                    <input type="number" id="batchSize" min="1" step="10" value="10" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6" aria-describedby="batchSizeDesc">
+                                    <input type="number" id="batchSize" min="10" step="10" value="50" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6" aria-describedby="batchSizeDesc">
                                     <span id="batchSizeDesc" class="sr-only">Enter the batch size for translation</span>
                                 </dd>
                             </div>
                             <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 excludedTerms">
                                 <dt class="text-sm font-medium leading-6 text-gray-900">Excluded Terms
                                     <div class="tooltip ml-2">
-                                        <i class="fas fa-info-circle"></i>
+                                        <i class="fas fa-info-circle text-gray-400"></i>
                                         <span class="tooltiptext">Enter terms to exclude from translation, separated by commas.</span>
                                     </div>
                                 </dt>
