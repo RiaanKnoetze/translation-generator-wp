@@ -65,16 +65,9 @@ export function initializeTranslateButton() {
             // Get batch size from global settings
             const batchSize = parseInt(window.settings.batchSize, 10) || 10;
 
-            const translations = {}; // Object to hold translations for each language
-
             for (const language of selectedLanguages) {
                 const { translatedContent } = await processContent(content, excludedTerms, originalFileName, startTime, language, batchSize);
-                translations[language] = translatedContent;
-            }
-
-            // Save each translated file
-            for (const language in translations) {
-                saveTranslatedFile(translations[language], originalFileName, language);
+                saveTranslatedFile(translatedContent, originalFileName, language);
             }
 
             setTimeout(() => {

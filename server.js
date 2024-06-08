@@ -83,31 +83,29 @@ app.post('/set-language-mapping', (req, res) => {
 // Route to handle translation
 app.post('/translate', async (req, res) => {
     try {
-        const { texts, languages } = req.body; // Get texts and target languages from the request body
-        const model = process.env.SELECTED_MODEL || 'gpt-4o'; // Use the selected model or default to gpt-4
-        const translations = {};
+        const { texts, language } = req.body; // Get texts and target language from the request body
+        const languageName = languageMapping[language]; // Map the language code to language name
 
-        for (const language of languages) {
-            const languageName = languageMapping[language]; // Map the language code to language name
-
-            if (!languageName) {
-                return res.status(400).json({ error: 'Unsupported language code' });
-            }
-
-            const translatedTexts = await Promise.all(texts.map(text => {
-                return openai.chat.completions.create({
-                    model: model, // Use the selected model
-                    messages: [{ role: "user", content: `Translate the following text to ${languageName}. When needed, use the formal form of "you". Please translate only the text and don't write anything else. Don't add extra periods at the end of sentences if the original doesn't have them. Text to translate: ${text}` }]
-                }).then(response => response.choices[0].message.content.trim());
-            }));
-            translations[language] = translatedTexts;
+        if (!languageName) {
+            return res.status(400).json({ error: 'Unsupported language code' });
         }
-        res.json({ translations });
+
+        const model = process.env.SELECTED_MODEL || 'gpt-4o'; // Use the selected model or default to gpt-4
+
+        const translations = await Promise.all(texts.map(text => {
+            return openai.chat.completions.create({
+                model: model, // Use the selected model
+                messages: [{ role: "user", content: `Translate the following text to ${languageName}. When needed, use the formal form of "you". Please translate only the text and don't write anything else. Don't add extra periods at the end of sentences if the original doesn't have them. Text to translate: ${text}` }]
+            }).then(response => response.choices[0].message.content.trim());
+        }));
+
+        res.json({ translatedTexts: translations });
     } catch (error) {
         console.error('Error processing translations:', error);
         res.status(500).json({ error: 'Failed to process translations' });
     }
 });
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
