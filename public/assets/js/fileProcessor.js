@@ -65,9 +65,16 @@ export function initializeTranslateButton() {
             // Get batch size from global settings
             const batchSize = parseInt(window.settings.batchSize, 10) || 10;
 
+            const translations = {}; // Object to hold translations for each language
+
             for (const language of selectedLanguages) {
                 const { translatedContent } = await processContent(content, excludedTerms, originalFileName, startTime, language, batchSize);
-                saveTranslatedFile(translatedContent, originalFileName, language);
+                translations[language] = translatedContent;
+            }
+
+            // Save each translated file
+            for (const language in translations) {
+                saveTranslatedFile(translations[language], originalFileName, language);
             }
 
             setTimeout(() => {
@@ -85,9 +92,17 @@ export function initializeTranslateButton() {
 export function initializeLanguageSelect() {
     const languageSelect = document.getElementById('languageSelect');
     return new Choices(languageSelect, {
-        placeholderValue: 'Select a language',
+        placeholderValue: 'Choose Language',
         searchPlaceholderValue: 'Type to search',
         shouldSort: true,
         removeItemButton: true,
+        duplicateItemsAllowed: false,
+        searchChoices: false,
+        shouldSortItems: true,
+        searchEnabled: true,
+        searchChoices: true,
+        searchFloor: 1,
+        searchResultLimit: 4,
+        searchFields: ['label', 'value'],
     });
 }
