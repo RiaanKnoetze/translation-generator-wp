@@ -48,8 +48,8 @@ export function applyFixes(original, translation, exclusionMap) {
         translation = `${translation.trim()}${endingPunctuation}`;
     }
 
-    // Escape double quotes in the translation
-    translation = translation.replace(/"/g, '\\"');
+    // Escape double quotes in the translation, except inside certain HTML attributes
+    translation = escapeQuotesInHTML(translation);
 
     return translation;
 }
@@ -75,6 +75,19 @@ function getEndingPunctuation(text) {
     }
 
     return '';
+}
+
+// Helper function to escape quotes outside HTML tags and attributes
+function escapeQuotesInHTML(text) {
+    // Use a regular expression to match all HTML tags
+    return text.replace(/(<\/?[\w\s="/.':;#-\/\?]+>)/g, (match) => {
+        // If the match is an HTML tag, return it unchanged
+        if (match.startsWith('<') && match.endsWith('>')) {
+            return match;
+        }
+        // Otherwise, escape the double quote
+        return match.replace(/"/g, '\\"');
+    });
 }
 
 export function getTokenCount(text) {
