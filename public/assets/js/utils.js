@@ -5,12 +5,20 @@ export function formatPluginName(name) {
 export function applyFixes(original, translation, exclusionMap) {
     if (!original || !translation) return translation;
 
+    // Save placeholders wrapped by {{ }}
+    const placeholders = [];
+    const placeholderRegex = /{{\s*[\w\s]+\s*}}/g;
+    let match;
+    while ((match = placeholderRegex.exec(original)) !== null) {
+        placeholders.push(match[0]);
+    }
+
     // Replace specific quotation marks with standard double quotes
     translation = translation.replace(/«/g, '"').replace(/»/g, '"');
 
     // Ensure placeholders are correctly included in the translation
-    const placeholders = original.match(/%[0-9]+\$[a-zA-Z]/g) || [];
-    placeholders.forEach(placeholder => {
+    const originalPlaceholders = original.match(/%[0-9]+\$[a-zA-Z]/g) || [];
+    originalPlaceholders.forEach(placeholder => {
         if (!translation.includes(placeholder)) {
             translation = placeholder + translation.replace(new RegExp(placeholder.replace('$', '\\$'), 'g'), '');
         }
@@ -34,18 +42,37 @@ export function applyFixes(original, translation, exclusionMap) {
         translation = translation.replace(regex, match => originalTerm);
     });
 
+    // Restore placeholders wrapped by {{ }}
+    placeholders.forEach(placeholder => {
+        const regex = new RegExp(`{{\\s*${placeholder.slice(2, -2).trim()}\\s*}}`, 'gi');
+        translation = translation.replace(regex, placeholder);
+    });
+
     // Replace non-breaking spaces with regular spaces
     translation = translation.replace(/[\u00A0]/g, ' ');
 
-    // Remove extra period if the original doesn't end with one
-    if (!original.trim().endsWith('.')) {
-        translation = translation.trim().slice(0, -1);
-    }
-
-    // Add original ending punctuation if present
+    // Ensure the translation ends with the same punctuation as the original
     const endingPunctuation = getEndingPunctuation(original);
     if (endingPunctuation && !translation.trim().endsWith(endingPunctuation)) {
         translation = `${translation.trim()}${endingPunctuation}`;
+    }
+
+    // Add original ending punctuation if present
+    if (original.endsWith(' ')) {
+        translation = `${translation} `;
+    }
+
+    // Fix for missing placeholders closing bracket
+    const missingPlaceholders = original.match(/{[^}]*$/g) || [];
+    missingPlaceholders.forEach(placeholder => {
+        if (!translation.includes(placeholder)) {
+            translation = translation.replace(placeholder.replace('{', '\\{'), placeholder);
+        }
+    });
+
+    // Ensure the translation starts with the same case as the original
+    if (original.charAt(0).toLowerCase() === original.charAt(0) && translation.charAt(0).toUpperCase() === translation.charAt(0)) {
+        translation = translation.charAt(0).toLowerCase() + translation.slice(1);
     }
 
     // Escape double quotes in the translation, except inside certain HTML attributes
@@ -56,7 +83,7 @@ export function applyFixes(original, translation, exclusionMap) {
 
 // Helper function to get the ending punctuation of a string
 function getEndingPunctuation(text) {
-    const punctuation = ['.', ',', ':', ';', '!', ')', ']', "'", '"', '>', '»'];
+    const punctuation = ['.', ',', ':', ';', '!', ')', ']', "'", '"', '>', '»', '?', '...'];
     const specialPunctuation = ['&raquo;'];
 
     const trimmedText = text.trim();
@@ -141,7 +168,7 @@ export function resetExcludedTerms() {
 
 export function addPluginNameToExclusions(fileName) {
     const excludedTermsInput = document.getElementById('excludedTerms');
-    const pluginName = formatPluginName(fileName.replace('-fr_FR', ''));
+    const pluginName = formatPluginName(fileName.replace(/-[a-z]{2}_[A-Z]{2}$/, ''));
     const existingTerms = excludedTermsInput.value.split(',').map(term => term.trim()).filter(term => term !== '');
     if (!existingTerms.includes(pluginName)) {
         existingTerms.push(pluginName);
