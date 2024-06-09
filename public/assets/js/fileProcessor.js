@@ -3,11 +3,15 @@ import { saveTranslatedFile, calculateStringsInFile, resetProgressAndTokens, res
 
 export function initializeFileUpload() {
     const uploadInput = document.getElementById('fileUpload');
-    const fileNameDisplay = document.getElementById('fileName');
-    const fileDisplayContainer = document.getElementById('fileDisplayContainer');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const fileInfoContainer = document.getElementById('fileInfoContainer');
     const translateButton = document.getElementById('translateBtn');
-    const fileCheckIcon = document.getElementById('fileCheckIcon');
     const translateNotificationContainer = document.getElementById('translate-notification-container'); // New notification container
+    const languagesDisplay = document.getElementById('languagesDisplay');
+    const stringsFound = document.getElementById('stringsFound');
+    const stringsToTranslate = document.getElementById('stringsToTranslate');
+    const gptModelDisplay = document.getElementById('gptModelDisplay');
+
     let originalFileName = '';
 
     uploadInput.addEventListener('change', function(event) {
@@ -16,19 +20,29 @@ export function initializeFileUpload() {
             translateButton.disabled = false;
             originalFileName = file.name.replace('.pot', '');
             fileNameDisplay.textContent = file.name;
-            fileDisplayContainer.classList.remove('hidden');
-            fileCheckIcon.classList.remove('hidden');
-            fileCheckIcon.className = 'fa-solid fa-check file-check-icon text-gray-800';
+
+            // Get selected languages and GPT model
+            const selectedLanguages = Array.from(document.getElementById('languageSelect').selectedOptions).map(option => option.text);
+            const gptModel = document.getElementById('modelSelect').value;
+
+            languagesDisplay.textContent = selectedLanguages.join(', ');
+            gptModelDisplay.textContent = gptModel;
+
+            // Calculate strings found in file
+            calculateStringsInFile(file, function(totalStrings) {
+                stringsFound.textContent = totalStrings;
+                stringsToTranslate.textContent = totalStrings * selectedLanguages.length;
+            });
+
+            fileInfoContainer.classList.remove('hidden');
             resetProgressAndTokens();
             resetExcludedTerms();
             addPluginNameToExclusions(originalFileName);
-            calculateStringsInFile(file);
         } else {
             showNotification('Please upload a .POT file.', 'red', translateNotificationContainer);
             translateButton.disabled = true;
             fileNameDisplay.textContent = '';
-            fileDisplayContainer.classList.add('hidden');
-            fileCheckIcon.classList.add('hidden');
+            fileInfoContainer.classList.add('hidden');
         }
     });
 }
@@ -36,22 +50,36 @@ export function initializeFileUpload() {
 export function initializeTranslateButton() {
     const translateButton = document.getElementById('translateBtn');
     translateButton.addEventListener('click', async function() {
-        const fileCheckIcon = document.getElementById('fileCheckIcon');
-        const progressContainer = document.getElementById('progressContainer');
-        const progressBar = document.getElementById('progressBar');
+        const progressBarsContainer = document.getElementById('progressBarsContainer');
         const uploadInput = document.getElementById('fileUpload');
         const excludedTermsInput = document.getElementById('excludedTerms');
-        const languageSelect = document.getElementById('languageSelect'); // Get the selected language
+        const languageSelect = document.getElementById('languageSelect'); // Get the selected languages
 
-        // Reset progress bar
-        progressBar.style.width = '0%';
+        // Clear progress bars container
+        progressBarsContainer.innerHTML = '<div class="mt-6 border-t border-gray-100 pt-2"><h2 class="text-2xl font-bold text-gray-800">Progress</h2><table class="w-full mt-4"><tbody></tbody></table></div>';
+        progressBarsContainer.classList.remove('hidden');
 
-        // Update check icon and progress bar visibility
-        fileCheckIcon.classList.add('hidden');
-        fileCheckIcon.className = 'fa-solid fa-spinner file-check-icon text-gray-800 fa-spin';
-        fileCheckIcon.classList.remove('hidden');
-        progressContainer.classList.remove('hidden');
-        progressContainer.classList.remove('hide');
+        const tableBody = progressBarsContainer.querySelector('tbody');
+
+        // Get the selected languages
+        const selectedLanguages = Array.from(languageSelect.selectedOptions).map(option => ({ code: option.value, name: option.text }));
+
+        // Initialize progress bars
+        selectedLanguages.forEach(language => {
+            const progressBarId = `progressBar-${language.code}`;
+            const progressTimeId = `progressTime-${language.code}`;
+            const progressRow = document.createElement('tr');
+            progressRow.innerHTML = `
+                <td class="px-4 py-2 text-gray-900 text-sm font-medium leading-6 w-1/3">${language.name}</td>
+                <td class="px-4 py-2 w-full">
+                    <div id="progressContainer-${language.code}" class="w-full bg-white border border-gray-300 rounded-lg h-8 relative shadow-sm">
+                        <div id="${progressBarId}" class="bg-green-500 h-8 rounded-lg" style="width: 0%"></div>
+                        <div id="${progressTimeId}" class="absolute inset-0 flex items-center justify-center text-xs text-gray-800">0s</div>
+                    </div>
+                </td>
+            `;
+            tableBody.appendChild(progressRow);
+        });
 
         const file = uploadInput.files[0];
         const reader = new FileReader();
@@ -60,21 +88,18 @@ export function initializeTranslateButton() {
             const excludedTerms = excludedTermsInput.value.split(',').map(term => term.trim());
             const startTime = new Date();
             const originalFileName = file.name.replace('.pot', '');
-            const selectedLanguage = languageSelect.value; // Get the selected language
-
-            // Get batch size from global settings
             const batchSize = parseInt(window.settings.batchSize, 10) || 10;
 
-            const { translatedContent } = await processContent(content, excludedTerms, originalFileName, startTime, selectedLanguage, batchSize);
-            saveTranslatedFile(translatedContent, originalFileName, selectedLanguage);
+            for (const language of selectedLanguages) {
+                const progressBarId = `progressBar-${language.code}`;
+                const progressTimeId = `progressTime-${language.code}`;
+                const progressContainerId = `progressContainer-${language.code}`;
+                const { translatedContent } = await processContent(content, excludedTerms, originalFileName, startTime, language.code, batchSize, progressBarId);
+                saveTranslatedFile(translatedContent, originalFileName, language.code);
 
-            setTimeout(() => {
-                progressContainer.classList.add('hide');
-                setTimeout(() => progressContainer.classList.add('hidden'), 1000);
-                fileCheckIcon.classList.add('hidden');
-                fileCheckIcon.className = 'fa-solid fa-download file-check-icon text-gray-800';
-                fileCheckIcon.classList.remove('hidden');
-            }, 2000);
+                document.getElementById(progressTimeId).style.display = 'none';
+                document.getElementById(progressContainerId).classList.remove('border', 'border-gray-300');
+            }
         };
         reader.readAsText(file);
     });
@@ -83,9 +108,17 @@ export function initializeTranslateButton() {
 export function initializeLanguageSelect() {
     const languageSelect = document.getElementById('languageSelect');
     return new Choices(languageSelect, {
-        placeholderValue: 'Select a language',
+        placeholderValue: 'Choose Language',
         searchPlaceholderValue: 'Type to search',
         shouldSort: true,
         removeItemButton: true,
+        duplicateItemsAllowed: false,
+        searchChoices: false,
+        shouldSortItems: true,
+        searchEnabled: true,
+        searchChoices: true,
+        searchFloor: 1,
+        searchResultLimit: 4,
+        searchFields: ['label', 'value'],
     });
 }

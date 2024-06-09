@@ -38,7 +38,7 @@ export function applyFixes(original, translation, exclusionMap) {
     translation = translation.replace(/[\u00A0]/g, ' ');
 
     // Remove extra period if the original doesn't end with one
-    if (!original.trim().endsWith('.') && translation.trim().endsWith('.')) {
+    if (!original.trim().endsWith('.')) {
         translation = translation.trim().slice(0, -1);
     }
 
@@ -94,14 +94,13 @@ export function getTokenCount(text) {
     return text.split(/\s+/).length;
 }
 
-export function updateProgress(translated, total, startTime) {
-    const progressBar = document.getElementById('progressBar');
-    const stringsTranslated = document.getElementById('stringsTranslated');
-    const estimatedTime = document.getElementById('estimatedTime');
+export function updateProgress(translated, total, startTime, progressBarId) {
+    const progressBar = document.getElementById(progressBarId);
+    const estimatedTime = progressBar.nextElementSibling;
 
     const percentage = (translated / total) * 100;
     progressBar.style.width = `${percentage}%`;
-    stringsTranslated.textContent = `Strings translated: ${translated}/${total}`;
+
     if (translated > 0) {
         const elapsedTime = (new Date() - startTime) / 1000; // in seconds
         const estimatedTotalTime = (elapsedTime / translated) * total;
@@ -150,13 +149,12 @@ export function addPluginNameToExclusions(fileName) {
     excludedTermsInput.value = existingTerms.join(', ');
 }
 
-export function calculateStringsInFile(file) {
+export function calculateStringsInFile(file, callback) {
     const reader = new FileReader();
-    const stringsTranslated = document.getElementById('stringsTranslated');
     reader.onload = function(e) {
         const content = e.target.result;
         const totalStrings = content.split('\n').filter(line => line.startsWith('msgid')).length;
-        stringsTranslated.textContent = `Strings translated: 0/${totalStrings}`;
+        callback(totalStrings);
     };
     reader.readAsText(file);
 }

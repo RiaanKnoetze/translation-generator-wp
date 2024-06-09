@@ -1,3 +1,42 @@
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: rgba(31, 41, 55, var(--tw-bg-opacity));
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: rgba(31, 41, 55, var(--tw-bg-opacity)) transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
 .slide-out {
     transition: transform 1s ease-out, opacity 1s ease-out;
     transform: translateY(0);
@@ -52,58 +91,38 @@
     padding-left: 0.5em;
 }
 
-.choices .choices__inner {
+#settingsContainer .choices .choices__inner {
     background-color: transparent;
     border-radius: 0.375rem;
     border: 1px solid #d1d5db;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    padding: 0 0.5em 0 0.5em !important;
+    padding: 0.5em 0.5em 0 0.5em !important;
     min-height: auto;
 }
 
-.choice .choices__list--single {
-    padding: 0;
+#settingsContainer .choices__list--multiple .choices__item {
+    border: 0;
+    border-radius: 0.5em;
+    background-color: rgba(31, 41, 55, var(--tw-bg-opacity));
+    font-size: .875rem;
+    font-weight: normal;
 }
 
-.tooltip {
+#settingsContainer .choices__input {
+    width: 100% !important;
+    background-color: transparent;
+}
+
+#settingsContainer .choices[data-type*=select-multiple] .choices__button,
+#settingsContainer .choices[data-type*=text] .choices__button .tooltip {
     position: relative;
     display: inline-block;
     cursor: pointer;
+    border-left: 1px dashed rgba(255, 255, 255, 0.6);
 }
 
-.tooltip .tooltiptext {
-    visibility: hidden;
-    width: 200px;
+#settingsContainer .choices__list--dropdown .choices__item--selectable.is-highlighted,
+#settingsContainer .choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
     background-color: rgba(31, 41, 55, var(--tw-bg-opacity));
     color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 0;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    /* Position the tooltip above the text */
-    left: 50%;
-    margin-left: -100px;
-    /* Center the tooltip */
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.tooltip .tooltiptext::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    /* Bottom of the tooltip */
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: black transparent transparent transparent;
-    /* Arrow color */
-}
-
-.tooltip:hover .tooltiptext {
-    visibility: visible;
-    opacity: 1;
 }

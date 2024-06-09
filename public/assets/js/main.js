@@ -1,6 +1,4 @@
-// Import necessary functions from other modules
 import { initializeFileUpload, initializeTranslateButton, initializeLanguageSelect } from './fileProcessor.js';
-import { initializeFileCheckIcon } from './translator.js';
 import { saveSettings, loadSettings, setTabListeners } from './settings.js';
 
 let choicesInstance;
@@ -21,16 +19,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the translate button functionality
     initializeTranslateButton();
 
-    // Initialize the file check icon functionality
-    initializeFileCheckIcon();
-
     // Initialize the language select dropdown with Choices.js and store the instance
     choicesInstance = initializeLanguageSelect();
 
     // Initialize the model select dropdown with Choices.js and store the instance
     modelChoicesInstance = new Choices(modelSelect, { removeItemButton: true });
 
-    // Load the settings (API key, selected language, selected model, and batch size) on page load
+    // Load the settings (API key, selected languages, selected model, and batch size) on page load
     loadSettings(choicesInstance, modelChoicesInstance).then(() => {
         // Send the language mapping to the server after loading the settings
         sendLanguageMapping();
@@ -68,12 +63,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listener to the save button to save the settings and resend the language mapping when clicked
     saveBtn.addEventListener('click', () => {
         const apiKey = apiKeyInput.value;
-        const selectedLanguage = languageSelect.value;
+        const selectedLanguages = Array.from(languageSelect.selectedOptions).map(option => option.value);
         const selectedModel = modelSelect.value;
         const batchSize = batchSizeInput.value; // Get batch size value
-        saveSettings(apiKey, selectedLanguage, selectedModel, batchSize).then(() => {
+        saveSettings(apiKey, selectedLanguages, selectedModel, batchSize).then(() => {
             sendLanguageMapping();
         });
     });
 });
-

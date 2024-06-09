@@ -20,15 +20,15 @@ const openai = new OpenAI({
 // In-memory storage for language mappings
 let languageMapping = {};
 
-// Route to handle saving the API key, selected language, selected model, and batch size
+// Route to handle saving the API key, selected languages, selected model, and batch size
 app.post('/save-settings', (req, res) => {
     const apiKey = req.body.apiKey;
-    const selectedLanguage = req.body.selectedLanguage;
+    const selectedLanguages = req.body.selectedLanguages;
     const selectedModel = req.body.selectedModel;
     const batchSize = req.body.batchSize;
 
-    if (!apiKey || !selectedLanguage || !selectedModel || !batchSize) {
-        return res.status(400).json({ message: 'API key, selected language, selected model, and batch size are required' });
+    if (!apiKey || !selectedLanguages || !selectedModel || !batchSize) {
+        return res.status(400).json({ message: 'API key, selected languages, selected model, and batch size are required' });
     }
 
     const envFilePath = path.resolve(__dirname, '.env');
@@ -40,9 +40,9 @@ app.post('/save-settings', (req, res) => {
             envConfig = dotenv.parse(fs.readFileSync(envFilePath));
         }
 
-        // Update the API key, selected language, selected model, and batch size
+        // Update the API key, selected languages, selected model, and batch size
         envConfig.OPENAI_API_KEY = apiKey;
-        envConfig.SELECTED_LANGUAGE = selectedLanguage;
+        envConfig.SELECTED_LANGUAGES = selectedLanguages.join(','); // Store as comma-separated values
         envConfig.SELECTED_MODEL = selectedModel;
         envConfig.BATCH_SIZE = batchSize;
 
@@ -60,7 +60,7 @@ app.post('/save-settings', (req, res) => {
     }
 });
 
-// Route to get the API key, selected language, selected model, and batch size
+// Route to get the API key, selected languages, selected model, and batch size
 app.get('/get-settings', (req, res) => {
     const envFilePath = path.resolve(__dirname, '.env');
     let envConfig = {};
@@ -68,10 +68,10 @@ app.get('/get-settings', (req, res) => {
         envConfig = dotenv.parse(fs.readFileSync(envFilePath));
     }
     const apiKey = envConfig.OPENAI_API_KEY || '';
-    const selectedLanguage = envConfig.SELECTED_LANGUAGE || 'en_US';
+    const selectedLanguages = (envConfig.SELECTED_LANGUAGES || 'en_US').split(','); // Split the stored values into an array
     const selectedModel = envConfig.SELECTED_MODEL || 'gpt-4o';
     const batchSize = envConfig.BATCH_SIZE || '10';
-    res.json({ apiKey, selectedLanguage, selectedModel, batchSize });
+    res.json({ apiKey, selectedLanguages, selectedModel, batchSize });
 });
 
 // Route to receive language mapping from frontend
@@ -98,12 +98,14 @@ app.post('/translate', async (req, res) => {
                 messages: [{ role: "user", content: `Translate the following text to ${languageName}. When needed, use the formal form of "you". Please translate only the text and don't write anything else. Don't add extra periods at the end of sentences if the original doesn't have them. Text to translate: ${text}` }]
             }).then(response => response.choices[0].message.content.trim());
         }));
+
         res.json({ translatedTexts: translations });
     } catch (error) {
         console.error('Error processing translations:', error);
         res.status(500).json({ error: 'Failed to process translations' });
     }
 });
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

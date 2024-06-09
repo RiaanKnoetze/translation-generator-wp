@@ -37,7 +37,7 @@ const pluralFormsMapping = {
 };
 
 // Main function to process the content for translation
-export async function processContent(content, excludedTerms, originalFileName, startTime, selectedLanguage, batchSize) {
+export async function processContent(content, excludedTerms, originalFileName, startTime, selectedLanguage, batchSize, progressBarId) {
     const lines = content.split('\n'); // Split the content into lines
     const normalizedExclusions = excludedTerms.map(term => term.toLowerCase()); // Normalize exclusions to lowercase
     const exclusionMap = new Map(); // Map to store original exclusions
@@ -51,7 +51,7 @@ export async function processContent(content, excludedTerms, originalFileName, s
     let outputTokens = 0; // Counter for output tokens
     const totalStrings = lines.filter(line => line.startsWith('msgid')).length; // Count total strings to be translated
 
-    updateProgress(0, totalStrings, startTime); // Initialize progress update
+    updateProgress(0, totalStrings, startTime, progressBarId); // Initialize progress update
 
     const today = new Date();
     const revisionDate = today.toISOString().replace('T', ' ').split('.')[0] + '+0000'; // Format revision date
@@ -65,7 +65,7 @@ export async function processContent(content, excludedTerms, originalFileName, s
     translatedLines.push(header); // Add the header to the translated lines
 
     // Process singular translations
-    const singularResult = await processSingularTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens);
+    const singularResult = await processSingularTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens, progressBarId);
     translatedLines = singularResult.translatedLines;
     inputTokens = singularResult.inputTokens;
     outputTokens = singularResult.outputTokens;
@@ -74,12 +74,12 @@ export async function processContent(content, excludedTerms, originalFileName, s
     translatedLines = removeInvalidPluralSections(translatedLines);
 
     // Process plural translations
-    const pluralResult = await processPluralTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens);
+    const pluralResult = await processPluralTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens, progressBarId);
     translatedLines = pluralResult.translatedLines;
     inputTokens = pluralResult.inputTokens;
     outputTokens = pluralResult.outputTokens;
 
-    updateProgress(totalStrings, totalStrings, startTime); // Final progress update
+    updateProgress(totalStrings, totalStrings, startTime, progressBarId); // Final progress update
     updateTokensUsed(inputTokens, outputTokens); // Update token usage
 
     return { translatedContent: translatedLines.join('\n'), selectedLanguage }; // Return the translated content and selected language
@@ -104,7 +104,7 @@ msgstr ""
 }
 
 // Function to process singular translations
-async function processSingularTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens) {
+async function processSingularTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens, progressBarId) {
     let metadata = []; // Array to hold metadata lines
     let msgidLine = ''; // Variable to hold the msgid line
     let skipSection = false; // Flag to indicate if the section should be skipped
@@ -143,7 +143,7 @@ async function processSingularTranslations(lines, translatedLines, normalizedExc
                 metadata = []; // Clear metadata
                 msgidLine = ''; // Clear msgid line
                 totalTranslations++; // Increment translation count
-                updateProgress(totalTranslations, totalStrings, startTime); // Update progress
+                updateProgress(totalTranslations, totalStrings, startTime, progressBarId); // Update progress
                 continue;
             }
             batch.push({ metadata: [...metadata], original: msgidLine, text: msgidText, index: translatedLines.length }); // Add to batch
@@ -156,7 +156,7 @@ async function processSingularTranslations(lines, translatedLines, normalizedExc
                 inputTokens += result.inputTokens;
                 outputTokens += result.outputTokens;
                 totalTranslations += batch.length; // Update total translations
-                updateProgress(totalTranslations, totalStrings, startTime); // Update progress
+                updateProgress(totalTranslations, totalStrings, startTime, progressBarId); // Update progress
                 batch = []; // Clear batch
             }
         }
@@ -168,14 +168,14 @@ async function processSingularTranslations(lines, translatedLines, normalizedExc
         inputTokens += result.inputTokens;
         outputTokens += result.outputTokens;
         totalTranslations += batch.length; // Update total translations
-        updateProgress(totalTranslations, totalStrings, startTime); // Update progress
+        updateProgress(totalTranslations, totalStrings, startTime, progressBarId); // Update progress
     }
 
     return { translatedLines, inputTokens, outputTokens };
 }
 
 // Function to process plural translations
-async function processPluralTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens) {
+async function processPluralTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens, progressBarId) {
     let metadata = []; // Array to hold metadata lines
     let msgidLine = ''; // Variable to hold the msgid line
     let msgidPluralLine = ''; // Variable to hold the msgid_plural line
@@ -214,7 +214,7 @@ async function processPluralTranslations(lines, translatedLines, normalizedExclu
                 msgidLine = ''; // Clear msgid line
                 msgidPluralLine = ''; // Clear msgid_plural line
                 totalTranslations++; // Increment translation count
-                updateProgress(totalTranslations, totalStrings, startTime); // Update progress
+                updateProgress(totalTranslations, totalStrings, startTime, progressBarId); // Update progress
                 continue;
             }
             batch.push({
@@ -235,7 +235,7 @@ async function processPluralTranslations(lines, translatedLines, normalizedExclu
                 inputTokens += result.inputTokens;
                 outputTokens += result.outputTokens;
                 totalTranslations += batch.length; // Update total translations
-                updateProgress(totalTranslations, totalStrings, startTime); // Update progress
+                updateProgress(totalTranslations, totalStrings, startTime, progressBarId); // Update progress
                 batch = []; // Clear batch
             }
         }
@@ -247,7 +247,7 @@ async function processPluralTranslations(lines, translatedLines, normalizedExclu
         inputTokens += result.inputTokens;
         outputTokens += result.outputTokens;
         totalTranslations += batch.length; // Update total translations
-        updateProgress(totalTranslations, totalStrings, startTime); // Update progress
+        updateProgress(totalTranslations, totalStrings, startTime, progressBarId); // Update progress
     }
 
     return { translatedLines, inputTokens, outputTokens };
@@ -351,27 +351,15 @@ function filterMetadata(metadata) {
     return filteredMetadata;
 }
 
-// Function to initialize the file check icon
-export function initializeFileCheckIcon() {
-    const fileCheckIcon = document.getElementById('fileCheckIcon');
-    fileCheckIcon.addEventListener('click', function () {
-        if (fileCheckIcon.classList.contains('fa-download')) {
-            const translatedContent = ''; // Retrieve the translated content here
-            const originalFileName = ''; // Retrieve the original file name here
-            saveTranslatedFile(translatedContent, originalFileName);
-        }
-    });
-}
-
 // Function to send texts to the server for translation
-async function translateTexts(texts, selectedLanguage) {
+async function translateTexts(texts, language) {
     try {
         const response = await fetch('http://localhost:3000/translate', {
             method: 'POST', // HTTP method
             headers: {
                 'Content-Type': 'application/json' // Content type of the request
             },
-            body: JSON.stringify({ texts, language: selectedLanguage }) // Data to be sent in the request body
+            body: JSON.stringify({ texts, language }) // Data to be sent in the request body
         });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
