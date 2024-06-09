@@ -2,6 +2,8 @@
 
 xxx - Version 1.5
 * New - Add multiselect language field
+* New - Add details & progress section to App page
+* New - Individual progress bars per language
 * New - One .pot file can be translated into multiple languages sequentially
 
 2024-06-08 - version 1.4

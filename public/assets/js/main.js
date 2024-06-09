@@ -1,6 +1,4 @@
-// Import necessary functions from other modules
 import { initializeFileUpload, initializeTranslateButton, initializeLanguageSelect } from './fileProcessor.js';
-import { initializeFileCheckIcon } from './translator.js';
 import { saveSettings, loadSettings, setTabListeners } from './settings.js';
 
 let choicesInstance;
@@ -20,9 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the translate button functionality
     initializeTranslateButton();
-
-    // Initialize the file check icon functionality
-    initializeFileCheckIcon();
 
     // Initialize the language select dropdown with Choices.js and store the instance
     choicesInstance = initializeLanguageSelect();
