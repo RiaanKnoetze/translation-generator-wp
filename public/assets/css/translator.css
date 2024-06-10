@@ -63,6 +63,7 @@
     flex-direction: column;
     align-items: flex-start;
     margin-top: 1.6rem;
+    margin-right: 0;
 }
 
 .tabs button {
@@ -125,4 +126,75 @@
 #settingsContainer .choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
     background-color: rgba(31, 41, 55, var(--tw-bg-opacity));
     color: #fff;
+}
+
+@media (max-width: 768px) {
+    #hamburgerBtn {
+        display: block;
+    }
+
+    .tabs {
+        display: none;
+    }
+
+    #hamburgerMenu {
+        display: none;
+    }
+
+    .md\:hidden {
+        display: block;
+    }
+
+    .md\:inline {
+        display: none;
+    }
+
+    .md\:flex {
+        display: flex;
+    }
+
+    #slidingMenu {
+        display: block;
+    }
+
+    #slidingMenu button.active {
+        border-left: 3px solid;
+        background: none;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .flex-1 {
+        flex: 1 1 100%;
+    }
+
+    .flex-col {
+        flex-direction: column;
+    }
+
+    #translateContainer .flex-1 {
+        width: 100%;
+    }
+
+    #translateContainer .flex {
+        width: 100%;
+    }
+
+    #translateContainer label,
+    #translateContainer button {
+        width: 100%;
+    }
+
+    #fileInfoContainer dt {
+        font-weight: bold;
+    }
+
+    #fileInfoContainer dd {
+        border-left: 3px solid;
+        padding-left: 1em;
+    }
 }

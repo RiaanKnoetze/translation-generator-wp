@@ -70,4 +70,61 @@ document.addEventListener('DOMContentLoaded', function() {
             sendLanguageMapping();
         });
     });
+
+    // Hamburger menu functionality
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    const slidingMenu = document.getElementById('slidingMenu');
+    const tabTranslate = document.getElementById('tabTranslate');
+    const tabSettings = document.getElementById('tabSettings');
+    const tabTranslateDesktop = document.getElementById('tabTranslateDesktop');
+    const tabSettingsDesktop = document.getElementById('tabSettingsDesktop');
+
+    hamburgerBtn.addEventListener('click', function () {
+        slidingMenu.classList.remove('-translate-x-full');
+        slidingMenu.setAttribute('aria-hidden', 'false');
+        closeMenuBtn.focus();
+    });
+
+    closeMenuBtn.addEventListener('click', function () {
+        slidingMenu.classList.add('-translate-x-full');
+        slidingMenu.setAttribute('aria-hidden', 'true');
+        hamburgerBtn.focus();
+    });
+
+    tabTranslate.addEventListener('click', function () {
+        tabTranslate.classList.add('active');
+        tabSettings.classList.remove('active');
+        tabTranslateDesktop.classList.add('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
+        tabSettingsDesktop.classList.remove('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
+        slidingMenu.classList.add('-translate-x-full');
+        slidingMenu.setAttribute('aria-hidden', 'true');
+        document.getElementById('translateContainer').focus();
+    });
+
+    tabSettings.addEventListener('click', function () {
+        tabSettings.classList.add('active');
+        tabTranslate.classList.remove('active');
+        tabSettingsDesktop.classList.add('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
+        tabTranslateDesktop.classList.remove('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
+        slidingMenu.classList.add('-translate-x-full');
+        slidingMenu.setAttribute('aria-hidden', 'true');
+        document.getElementById('settingsContainer').focus();
+    });
+
+    tabTranslateDesktop.addEventListener('click', function () {
+        tabTranslateDesktop.classList.add('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
+        tabSettingsDesktop.classList.remove('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
+        document.getElementById('translateContainer').classList.add('active');
+        document.getElementById('settingsContainer').classList.remove('active');
+        document.getElementById('translateContainer').focus();
+    });
+
+    tabSettingsDesktop.addEventListener('click', function () {
+        tabSettingsDesktop.classList.add('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
+        tabTranslateDesktop.classList.remove('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
+        document.getElementById('settingsContainer').classList.add('active');
+        document.getElementById('translateContainer').classList.remove('active');
+        document.getElementById('settingsContainer').focus();
+    });
 });

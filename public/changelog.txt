@@ -1,6 +1,7 @@
 *** Translation Generator WP ***
 
 xxx - Version 1.6
+* New - Add responsive design
 * New - Show all language progress bars on translation start
 * Fix - Reset "Translation Details" on settings change or new .pot file upload
 
