@@ -12,26 +12,47 @@
     <script src="/assets/js/main.js" type="module"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
-    <div class="flex w-full max-w-4xl">
-        <!-- Vertical Tabs -->
-        <div class="tabs" role="tablist">
-            <button id="tabTranslate" class="active rounded-tl-lg rounded-bl-lg shadow-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" role="tab" aria-selected="true" aria-controls="translateContainer">App</button>
-            <button id="tabSettings" class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" role="tab" aria-selected="false" aria-controls="settingsContainer">Settings</button>
+    <div class="flex w-full max-w-4xl flex-col md:flex-row">
+        <!-- Hamburger Menu -->
+        <div class="md:hidden flex items-center justify-between w-full mb-4">
+            <button id="hamburgerBtn" class="text-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" aria-label="Open menu">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+        <!-- Sliding Menu -->
+        <div id="slidingMenu" class="fixed top-0 left-0 h-full w-3/4 shadow-md transform -translate-x-full transition-transform duration-300 z-50 bg-white" aria-hidden="true">
+            <button id="closeMenuBtn" class="absolute top-4 right-4 text-gray-800 focus:outline-none" aria-label="Close menu">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+            <div class="flex flex-col p-4">
+                <!-- Add fa-globe icon to the top of the sliding menu -->
+                <div class="mb-4 flex items-center space-x-2 border-b border-gray-100">
+                    <i class="fa-solid fa-globe text-3xl font-bold text-gray-800 px-4 mb-4" aria-hidden="true"></i>
+                </div>                
+                <button id="tabTranslate" class="mb-4 py-2 px-4 text-left text-gray-800 active" role="tab" aria-selected="true" aria-controls="translateContainer">App</button>
+                <button id="tabSettings" class="py-2 px-4 text-left text-gray-800" role="tab" aria-selected="false" aria-controls="settingsContainer">Settings</button>
+            </div>
+        </div>
+        <!-- Vertical Tabs for larger screens -->
+        <div class="hidden md:flex flex-col md:mb-0 md:mr-4 tabs" role="tablist">
+            <button id="tabTranslateDesktop" class="active rounded-tl-lg rounded-bl-lg shadow-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 flex-1 md:flex-none" role="tab" aria-selected="true" aria-controls="translateContainer">App</button>
+            <button id="tabSettingsDesktop" class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 flex-1 md:flex-none" role="tab" aria-selected="false" aria-controls="settingsContainer">Settings</button>
         </div>
         
         <!-- Tab Contents -->
         <div class="flex-1">
             <div id="translateContainer" class="tab-content active" role="tabpanel" aria-labelledby="tabTranslate">
-                <div class="max-w-2xl w-full bg-white shadow-md rounded-lg p-8 space-y-6 relative">
-                    <h1 class="text-3xl font-bold text-gray-800 flex items-center space-x-2">
+                <div class="w-full bg-white shadow-md rounded-lg p-8 space-y-6 relative">
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center space-x-2 md:flex">
+                        <!-- Show fa-globe icon and hide heading in responsive mode -->
                         <i class="fa-solid fa-globe" aria-hidden="true"></i>
-                        <span>Translation Generator WP</span>
-                        <span class="text-right text-gray-300 text-xs font-normal">v1.5</span>
+                        <span class="hidden md:block">Translation Generator WP</span>
+                        <span class="text-right text-gray-300 text-xs font-normal hidden md:inline">v1.6</span>
                     </h1>
-                    <p class="text-gray-600">Effortlessly translate your WordPress plugin language files with precision and ease.</p>
+                    <p class="text-gray-600 hidden md:block">Effortlessly translate your WordPress plugin language files with precision and ease.</p>
                     <!-- Notification Container -->
                     <div id="translate-notification-container" class="mb-4"></div>
-                    <div class="flex items-center space-x-4">
+                    <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
                         <label for="fileUpload" class="flex-1 flex items-center justify-center px-4 py-3 text-sm font-medium text-white bg-blue-500 rounded-lg cursor-pointer hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             <i class="fas fa-upload mr-2" aria-hidden="true"></i> Choose .POT File
                         </label>
@@ -67,15 +88,15 @@
                     <div id="progressBarsContainer" class="hidden mt-6"></div>
                     <hr class="border-t border-dashed border-gray-300 my-4">
                     <div class="flex justify-between text-gray-500 text-xs mt-4">
-                        <div id="stringsTranslated">Strings translated: 0/0</div>
+                        <div id="stringsTranslated" class="hidden md:block">Strings translated: 0/0</div>
                         <div id="tokensUsed">Tokens used: 0 ($0.00)</div>
                     </div>
                 </div>
             </div>
             
             <div id="settingsContainer" class="tab-content" role="tabpanel" aria-labelledby="tabSettings">
-                <div class="max-w-2xl w-full bg-white shadow-md rounded-lg p-8 space-y-6 relative">
-                    <h1 class="text-2xl font-bold text-gray-800">Settings</h1>
+                <div class="w-full bg-white shadow-md rounded-lg p-8 space-y-6 relative">
+                    <h1 class="text-2xl font-bold text-gray-800 hidden md:block">Settings</h1>
                     <!-- Notification Container -->
                     <div id="settings-notification-container" class="mb-4"></div>
 

@@ -87,6 +87,31 @@ Follow these steps to set up the project:
 4. The progress bar will display the translation progress. The translated strings area will show the string translation process.
 5. Once completed, the translated file will be automatically downloaded.
 
+## Supported Languages
+
+The application currently supports the following languages:
+
+- English (United States) - `en_US`
+- Spanish - `es_ES`
+- German - `de_DE`
+- French - `fr_FR`
+- Italian - `it_IT`
+- Portuguese (Portugal) - `pt_PT`
+- Russian - `ru_RU`
+- Dutch - `nl_NL`
+- Japanese - `ja`
+- Chinese (Simplified) - `zh_CN`
+- Polish - `pl_PL`
+- Romanian - `ro_RO`
+- Hungarian - `hu_HU`
+- Swedish - `sv_SE`
+- Finnish - `fi`
+- Danish - `da_DK`
+- Greek - `el`
+- Turkish - `tr_TR`
+- Hebrew - `he_IL`
+- Korean - `ko_KR`
+
 ## Additional Information
 
 * Ensure you have the latest version of Node.js for the best performance and compatibility.
@@ -96,4 +121,4 @@ Follow these steps to set up the project:
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the GPLv3 License. See the LICENSE file for details.
