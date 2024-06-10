@@ -1,6 +1,10 @@
 *** Translation Generator WP ***
 
-xxx - Version 1.5
+xxx - Version 1.6
+* New - Show all language progress bars on translation start
+* Fix - Reset "Translation Details" on settings change or new .pot file upload
+
+2024-06-09 - Version 1.5
 * New - Add multiselect language field
 * New - Add details & progress section to App page
 * New - Individual progress bars per language
