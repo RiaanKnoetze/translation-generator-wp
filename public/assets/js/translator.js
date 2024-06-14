@@ -1,4 +1,4 @@
-import { applyFixes, updateProgress, updateTokensUsed, isExcludedTerm, formatPluginName, saveTranslatedFile, getTokenCount, showNotification } from './utils.js';
+import { applyFixes, updateProgress, updateTokensUsed, formatPluginName, saveTranslatedFile, getTokenCount, showNotification } from './utils.js';
 
 // Sections to skip during translation
 const skipTranslationSections = [
@@ -31,7 +31,7 @@ const pluralFormsMapping = {
     "da_DK": "nplurals=2; plural=(n != 1);", // Danish
     "el": "nplurals=2; plural=(n != 1);",    // Greek
     "tr_TR": "nplurals=1; plural=0;",        // Turkish
-    "he_IL": "nplurals=4; plural=(n==1 ? 0 : n==2 ? 1 : n>10 && n%10==0 ? 2 : 3);\n", // Hebrew
+    "he_IL": "nplurals=4; plural=(n==1 ? 0 : n==2 ? 1 : n>10 && n%10==0 ? 2 : 3);", // Hebrew
     "ko_KR": "nplurals=1; plural=0;"         // Korean
     // Add other language mappings as necessary
 };
@@ -104,6 +104,19 @@ msgstr ""
 "Language: ${selectedLanguage}\\n"
 "Project-Id-Version: Plugins - ${pluginName}\\n"
 `;
+}
+
+// Function to check if the term should be excluded from translation
+function isExcludedTerm(term, exclusions) {
+    const singleLetterPattern = /^[a-zA-Z]$/;
+    const placeholderPattern = /%[0-9]*\$?[a-zA-Z]/g;
+
+    // Check if the term contains only placeholders and nothing else
+    const isOnlyPlaceholders = term.match(placeholderPattern)?.join(' ') === term.trim();
+
+    return singleLetterPattern.test(term) ||
+           isOnlyPlaceholders ||
+           exclusions.includes(term.toLowerCase());
 }
 
 // Function to process singular translations
@@ -296,7 +309,12 @@ async function translateBatch(batch, translatedLines, exclusionMap, selectedLang
         translatedLines.push(...item.metadata); // Add metadata to translated lines
         if (item.msgctxt) translatedLines.push(item.msgctxt); // Add msgctxt if present
         translatedLines.push(item.original); // Add original msgid line
-        translatedLines.push(`msgstr "${translation}"`); // Add translated msgstr line
+        // If the original text is only placeholders, keep it as is
+        if (item.text.match(/%[0-9]*\$?[a-zA-Z]/g)?.join(' ') === item.text.trim()) {
+            translatedLines.push(`msgstr "${item.text}"`); // Keep the original placeholders
+        } else {
+            translatedLines.push(`msgstr "${translation}"`); // Add translated msgstr line
+        }
         translatedLines.push(''); // Add empty line
     });
 

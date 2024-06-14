@@ -6,6 +6,7 @@
 * New - Add support for msgctxt meta
 * Fix - Remove orphan meta lines during singular text batch processing
 * Fix - Reset "Translation Details" on settings change or new .pot file upload
+* Fix - Exclude single word and placeholder strings from being translated
 
 2024-06-09 - Version 1.5
 * New - Add multiselect language field
