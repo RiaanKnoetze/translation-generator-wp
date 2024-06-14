@@ -83,7 +83,7 @@ export function applyFixes(original, translation, exclusionMap) {
 
 // Helper function to get the ending punctuation of a string
 function getEndingPunctuation(text) {
-    const punctuation = ['.', ',', ':', ';', '!', ')', ']', "'", '"', '>', '»', '?', '...'];
+    const punctuation = ['.', ',', ':', ';', '!', ')', ']', "'", '"', '>', '»', '?', '...', '…'];
     const specialPunctuation = ['&raquo;'];
 
     const trimmedText = text.trim();

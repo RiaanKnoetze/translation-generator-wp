@@ -31,7 +31,7 @@ const pluralFormsMapping = {
     "da_DK": "nplurals=2; plural=(n != 1);", // Danish
     "el": "nplurals=2; plural=(n != 1);",    // Greek
     "tr_TR": "nplurals=1; plural=0;",        // Turkish
-    "he_IL": "nplurals=2; plural=(n != 1);", // Hebrew
+    "he_IL": "nplurals=4; plural=(n==1 ? 0 : n==2 ? 1 : n>10 && n%10==0 ? 2 : 3);\n", // Hebrew
     "ko_KR": "nplurals=1; plural=0;"         // Korean
     // Add other language mappings as necessary
 };
@@ -70,6 +70,9 @@ export async function processContent(content, excludedTerms, originalFileName, s
     inputTokens = singularResult.inputTokens;
     outputTokens = singularResult.outputTokens;
 
+    // Remove orphan lines after processing singular translations
+    translatedLines = removeOrphanLines(translatedLines);
+
     // Remove invalid plural sections
     translatedLines = removeInvalidPluralSections(translatedLines);
 
@@ -106,6 +109,7 @@ msgstr ""
 // Function to process singular translations
 async function processSingularTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens, progressBarId) {
     let metadata = []; // Array to hold metadata lines
+    let msgctxt = ''; // Variable to hold the msgctxt line
     let msgidLine = ''; // Variable to hold the msgid line
     let skipSection = false; // Flag to indicate if the section should be skipped
     let batch = []; // Array to hold a batch of lines for translation
@@ -121,9 +125,15 @@ async function processSingularTranslations(lines, translatedLines, normalizedExc
             continue;
         }
 
+        if (line.startsWith('msgctxt')) {
+            msgctxt = line; // Store the msgctxt line
+            continue;
+        }
+
         if (line.startsWith('msgid') && !line.startsWith('msgid ""') && !lines[i + 1]?.startsWith('msgid_plural')) {
             if (skipSection) {
                 metadata = []; // Clear metadata
+                msgctxt = ''; // Clear msgctxt
                 msgidLine = ''; // Clear msgid line
                 skipSection = false; // Reset skip flag
                 continue;
@@ -137,17 +147,20 @@ async function processSingularTranslations(lines, translatedLines, normalizedExc
             const msgidText = msgidLine.match(/"(.*)"/)[1]; // Extract msgid text
             if (skipSection || msgidText === "" || isExcludedTerm(msgidText, normalizedExclusions)) {
                 translatedLines.push(...metadata); // Add metadata to translated lines
+                if (msgctxt) translatedLines.push(msgctxt); // Add msgctxt if present
                 translatedLines.push(msgidLine); // Add msgid line
                 translatedLines.push(line); // Add msgstr line
                 translatedLines.push(''); // Add empty line
                 metadata = []; // Clear metadata
+                msgctxt = ''; // Clear msgctxt
                 msgidLine = ''; // Clear msgid line
                 totalTranslations++; // Increment translation count
                 updateProgress(totalTranslations, totalStrings, startTime, progressBarId); // Update progress
                 continue;
             }
-            batch.push({ metadata: [...metadata], original: msgidLine, text: msgidText, index: translatedLines.length }); // Add to batch
+            batch.push({ metadata: [...metadata], msgctxt: msgctxt, original: msgidLine, text: msgidText, index: translatedLines.length }); // Add to batch
             metadata = []; // Clear metadata
+            msgctxt = ''; // Clear msgctxt
             msgidLine = ''; // Clear msgid line
 
             if (batch.length === batchSize) {
@@ -177,6 +190,7 @@ async function processSingularTranslations(lines, translatedLines, normalizedExc
 // Function to process plural translations
 async function processPluralTranslations(lines, translatedLines, normalizedExclusions, exclusionMap, batchSize, totalTranslations, totalStrings, startTime, selectedLanguage, inputTokens, outputTokens, progressBarId) {
     let metadata = []; // Array to hold metadata lines
+    let msgctxt = ''; // Variable to hold the msgctxt line
     let msgidLine = ''; // Variable to hold the msgid line
     let msgidPluralLine = ''; // Variable to hold the msgid_plural line
     let skipSection = false; // Flag to indicate if the section should be skipped
@@ -187,6 +201,11 @@ async function processPluralTranslations(lines, translatedLines, normalizedExclu
 
         if (line.startsWith('#')) {
             metadata.push(line); // Add comment lines to metadata
+            continue;
+        }
+
+        if (line.startsWith('msgctxt')) {
+            msgctxt = line; // Store the msgctxt line
             continue;
         }
 
@@ -205,12 +224,14 @@ async function processPluralTranslations(lines, translatedLines, normalizedExclu
             const msgidPluralText = msgidPluralLine.match(/"(.*)"/)[1]; // Extract msgid_plural text
             if (skipSection || msgidText === "" || isExcludedTerm(msgidText, normalizedExclusions)) {
                 translatedLines.push(...metadata); // Add metadata to translated lines
+                if (msgctxt) translatedLines.push(msgctxt); // Add msgctxt if present
                 translatedLines.push(msgidLine); // Add msgid line
                 translatedLines.push(msgidPluralLine); // Add msgid_plural line
                 translatedLines.push(`msgstr[0] ""`); // Add msgstr[0] line
                 translatedLines.push(`msgstr[1] ""`); // Add msgstr[1] line
                 translatedLines.push(''); // Add empty line
                 metadata = []; // Clear metadata
+                msgctxt = ''; // Clear msgctxt
                 msgidLine = ''; // Clear msgid line
                 msgidPluralLine = ''; // Clear msgid_plural line
                 totalTranslations++; // Increment translation count
@@ -219,6 +240,7 @@ async function processPluralTranslations(lines, translatedLines, normalizedExclu
             }
             batch.push({
                 metadata: [...metadata],
+                msgctxt: msgctxt,
                 original: msgidLine,
                 text: msgidText,
                 plural: msgidPluralLine,
@@ -226,6 +248,7 @@ async function processPluralTranslations(lines, translatedLines, normalizedExclu
                 index: translatedLines.length
             }); // Add to batch
             metadata = []; // Clear metadata
+            msgctxt = ''; // Clear msgctxt
             msgidLine = ''; // Clear msgid line
             msgidPluralLine = ''; // Clear msgid_plural line
 
@@ -263,7 +286,15 @@ async function translateBatch(batch, translatedLines, exclusionMap, selectedLang
     batch.forEach((item, index) => {
         let translation = translations[index]; // Get the translated text
         translation = applyFixes(item.text, translation, exclusionMap); // Apply fixes to the translation
+        // Ensure placeholders are included in the translation
+        const placeholders = item.text.match(/%[0-9]*\$?[a-zA-Z]/g) || [];
+        placeholders.forEach(placeholder => {
+            if (!translation.includes(placeholder)) {
+                translation = placeholder + ' ' + translation;
+            }
+        });
         translatedLines.push(...item.metadata); // Add metadata to translated lines
+        if (item.msgctxt) translatedLines.push(item.msgctxt); // Add msgctxt if present
         translatedLines.push(item.original); // Add original msgid line
         translatedLines.push(`msgstr "${translation}"`); // Add translated msgstr line
         translatedLines.push(''); // Add empty line
@@ -288,6 +319,7 @@ async function translatePluralBatch(batch, translatedLines, exclusionMap, select
         pluralTranslation = applyFixes(item.pluralText, pluralTranslation, exclusionMap); // Apply fixes to the plural translation
 
         translatedLines.push(...filterMetadata(item.metadata)); // Add filtered metadata to translated lines
+        if (item.msgctxt) translatedLines.push(item.msgctxt); // Add msgctxt if present
         translatedLines.push(item.original); // Add original msgid line
         translatedLines.push(item.plural); // Add original msgid_plural line
         translatedLines.push(`msgstr[0] "${translation}"`); // Add translated msgstr[0] line
@@ -324,6 +356,30 @@ function removeInvalidPluralSections(lines) {
         if (!skipSection) {
             result.push(line);
         }
+    }
+
+    return result;
+}
+
+// Function to remove orphan lines
+function removeOrphanLines(lines) {
+    let result = [];
+    let skipNextLine = false;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (line.startsWith('#: ') && lines[i + 1]?.trim() === '') {
+            skipNextLine = true;
+            continue;
+        }
+
+        if (skipNextLine && line.trim() === '') {
+            skipNextLine = false;
+            continue;
+        }
+
+        result.push(line);
     }
 
     return result;

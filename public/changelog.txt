@@ -1,8 +1,10 @@
 *** Translation Generator WP ***
 
-xxx - Version 1.6
+2024-06-14 - Version 1.6
 * New - Add responsive design
 * New - Show all language progress bars on translation start
+* New - Add support for msgctxt meta
+* Fix - Remove orphan meta lines during singular text batch processing
 * Fix - Reset "Translation Details" on settings change or new .pot file upload
 
 2024-06-09 - Version 1.5
