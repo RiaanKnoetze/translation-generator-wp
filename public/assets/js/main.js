@@ -1,4 +1,4 @@
-import { initializeFileUpload, initializeTranslateButton, initializeLanguageSelect } from './fileProcessor.js';
+import { initializeFileUpload, initializeTranslateButton, initializeLanguageSelect, initializeDragAndDrop } from './fileProcessor.js';
 import { saveSettings, loadSettings, setTabListeners } from './settings.js';
 
 let choicesInstance;
@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Set up event listeners for tab navigation
     setTabListeners();
+
+    // Initialize drag and drop functionality
+    initializeDragAndDrop();
 
     // Extract language mapping from the select options
     function getLanguageMapping() {
