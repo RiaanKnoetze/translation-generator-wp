@@ -19,21 +19,20 @@ const pluralFormsMapping = {
     "fr_FR": "nplurals=2; plural=(n > 1);",  // French
     "it_IT": "nplurals=2; plural=(n != 1);", // Italian
     "pt_PT": "nplurals=2; plural=(n != 1);", // Portuguese (Portugal)
-    "ru_RU": "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);", // Russian
+    "ru_RU": "nplurals=3; plural=(n % 10 == 1 && n % 100 != 11) ? 0 : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 1 : 2);", // Russian
     "nl_NL": "nplurals=2; plural=(n != 1);", // Dutch
     "ja": "nplurals=1; plural=0;",           // Japanese
     "zh_CN": "nplurals=1; plural=0;",        // Chinese (Simplified)
-    "pl_PL": "nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);", // Polish
-    "ro_RO": "nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2);", // Romanian
+    "pl_PL": "nplurals=3; plural=(n == 1) ? 0 : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 1 : 2);", // Polish
+    "ro_RO": "nplurals=3; plural=(n == 1) ? 0 : ((n == 0 || n % 100 >= 2 && n % 100 <= 19) ? 1 : 2);", // Romanian
     "hu_HU": "nplurals=2; plural=(n != 1);", // Hungarian
     "sv_SE": "nplurals=2; plural=(n != 1);", // Swedish
     "fi": "nplurals=2; plural=(n != 1);",    // Finnish
     "da_DK": "nplurals=2; plural=(n != 1);", // Danish
     "el": "nplurals=2; plural=(n != 1);",    // Greek
     "tr_TR": "nplurals=1; plural=0;",        // Turkish
-    "he_IL": "nplurals=4; plural=(n==1 ? 0 : n==2 ? 1 : n>10 && n%10==0 ? 2 : 3);", // Hebrew
+    "he_IL": "nplurals=2; plural=n != 1;\n", // Hebrew
     "ko_KR": "nplurals=1; plural=0;"         // Korean
-    // Add other language mappings as necessary
 };
 
 // Main function to process the content for translation
@@ -242,6 +241,10 @@ async function processPluralTranslations(lines, translatedLines, normalizedExclu
                 translatedLines.push(msgidPluralLine); // Add msgid_plural line
                 translatedLines.push(`msgstr[0] ""`); // Add msgstr[0] line
                 translatedLines.push(`msgstr[1] ""`); // Add msgstr[1] line
+                const nplurals = pluralFormsMapping[selectedLanguage]?.match(/nplurals=(\d+);/)[1] || 2;
+                for (let j = 2; j < nplurals; j++) {
+                    translatedLines.push(`msgstr[${j}] ""`);
+                }
                 translatedLines.push(''); // Add empty line
                 metadata = []; // Clear metadata
                 msgctxt = ''; // Clear msgctxt
@@ -324,25 +327,39 @@ async function translateBatch(batch, translatedLines, exclusionMap, selectedLang
 
 // Function to translate a batch of plural texts
 async function translatePluralBatch(batch, translatedLines, exclusionMap, selectedLanguage) {
-    const translations = await translateTexts(batch.map(item => item.text), selectedLanguage); // Translate the batch of singular texts
-    const pluralTranslations = await translateTexts(batch.map(item => item.pluralText), selectedLanguage); // Translate the batch of plural texts
-    const inputTokens = batch.reduce((sum, item) => sum + getTokenCount(item.text) + getTokenCount(item.pluralText), 0); // Calculate input tokens
-    const outputTokens = translations.reduce((sum, translation) => sum + getTokenCount(translation), 0) + pluralTranslations.reduce((sum, translation) => sum + getTokenCount(translation), 0); // Calculate output tokens
+    const singularTexts = batch.map(item => item.text);
+    const pluralTexts = batch.map(item => item.pluralText);
+    
+    const singularTranslations = await translateTexts(singularTexts, selectedLanguage);
+    const pluralTranslations = await translateTexts(pluralTexts, selectedLanguage);
+    
+    const inputTokens = batch.reduce((sum, item) => sum + getTokenCount(item.text) + getTokenCount(item.pluralText), 0);
+    const outputTokens = singularTranslations.reduce((sum, translation) => sum + getTokenCount(translation), 0) +
+                          pluralTranslations.reduce((sum, translation) => sum + getTokenCount(translation), 0);
     const combinedTokens = inputTokens + outputTokens;
 
     batch.forEach((item, index) => {
-        let translation = translations[index]; // Get the translated singular text
-        translation = applyFixes(item.text, translation, exclusionMap); // Apply fixes to the translation
-        let pluralTranslation = pluralTranslations[index]; // Get the translated plural text
-        pluralTranslation = applyFixes(item.pluralText, pluralTranslation, exclusionMap); // Apply fixes to the plural translation
+        let singularTranslation = singularTranslations[index];
+        singularTranslation = applyFixes(item.text, singularTranslation, exclusionMap);
 
-        translatedLines.push(...filterMetadata(item.metadata)); // Add filtered metadata to translated lines
-        if (item.msgctxt) translatedLines.push(item.msgctxt); // Add msgctxt if present
-        translatedLines.push(item.original); // Add original msgid line
-        translatedLines.push(item.plural); // Add original msgid_plural line
-        translatedLines.push(`msgstr[0] "${translation}"`); // Add translated msgstr[0] line
-        translatedLines.push(`msgstr[1] "${pluralTranslation}"`); // Add translated msgstr[1] line
-        translatedLines.push(''); // Add empty line
+        let pluralTranslation = pluralTranslations[index];
+        pluralTranslation = applyFixes(item.pluralText, pluralTranslation, exclusionMap);
+
+        translatedLines.push(...filterMetadata(item.metadata));
+        if (item.msgctxt) translatedLines.push(item.msgctxt);
+        translatedLines.push(item.original);
+        translatedLines.push(item.plural);
+
+        translatedLines.push(`msgstr[0] "${singularTranslation}"`);
+        translatedLines.push(`msgstr[1] "${pluralTranslation}"`);
+
+        const nplurals = pluralFormsMapping[selectedLanguage]?.match(/nplurals=(\d+);/)[1] || 2;
+
+        for (let j = 2; j < nplurals; j++) {
+            translatedLines.push(`msgstr[${j}] "${pluralTranslations[index]}"`);
+        }
+
+        translatedLines.push('');
     });
 
     console.log(`Combined tokens: ${combinedTokens}, Cost: $${((inputTokens / 1000) * 0.005 + (outputTokens / 1000) * 0.015).toFixed(5)}`);
@@ -443,5 +460,6 @@ async function translateTexts(texts, language) {
     } catch (error) {
         console.error('Failed to translate texts:', error); // Log any errors that occur during the request
         showNotification('Failed to translate texts. Check the console for more details.', 'red', 'translate-notification-container'); // Show error notification
+        throw error; // Re-throw the error to allow further handling if necessary
     }
 }
