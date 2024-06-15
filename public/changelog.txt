@@ -1,5 +1,12 @@
 *** Translation Generator WP ***
 
+xxx - Version 1.7
+* New - Updated App page design
+* New - Add ability to drag & drop .POT template files for selection
+* New - Add support for languages with 3 or more plural forms
+* Tweak - Progress bar spinner icons to indicate wait time
+* Tweak - Updated coding standards
+
 2024-06-14 - Version 1.6
 * New - Add responsive design
 * New - Show all language progress bars on translation start
@@ -23,14 +30,14 @@
 * Fix - Append punctuation marks at the end of translated strings if found in source
 
 2024-06-03 - version 1.3
-* New: Add project tagline
-* New: Add GPT model select field
-* New: Add different GPT model translations and update .po file header with selected model
-* Tweak: Move excluded terms to settings pages
-* Tweak: Update readme.md file with usage instructions
-* Fix: Tokens used calculations
-* Fix: Tokens cost calculations
-* Fix: Remove trailing periods from translations if source sentence doesn't have one
+* New - Add project tagline
+* New - Add GPT model select field
+* New - Add different GPT model translations and update .po file header with selected model
+* Tweak - Move excluded terms to settings pages
+* Tweak - Update readme.md file with usage instructions
+* Fix - Tokens used calculations
+* Fix - Tokens cost calculations
+* Fix - Remove trailing periods from translations if source sentence doesn't have one
 
 2024-06-01 - version 1.2
 * New - Add 20 most widely used WordPress languages to translate files to

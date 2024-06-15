@@ -1,7 +1,19 @@
+/**
+ * Format the plugin name by capitalizing the first letter of each word.
+ * @param {string} name - The original plugin name.
+ * @returns {string} - The formatted plugin name.
+ */
 export function formatPluginName(name) {
     return name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
+/**
+ * Apply fixes to the translated text.
+ * @param {string} original - The original text.
+ * @param {string} translation - The translated text.
+ * @param {Map} exclusionMap - Map of terms to exclude from translation.
+ * @returns {string} - The fixed translation.
+ */
 export function applyFixes(original, translation, exclusionMap) {
     if (!original || !translation) return translation;
 
@@ -81,7 +93,12 @@ export function applyFixes(original, translation, exclusionMap) {
     return translation;
 }
 
-// Helper function to get the ending punctuation of a string
+
+/**
+ * Get the ending punctuation of a string.
+ * @param {string} text - The input text.
+ * @returns {string} - The ending punctuation.
+ */
 function getEndingPunctuation(text) {
     const punctuation = ['.', ',', ':', ';', '!', ')', ']', "'", '"', '>', '»', '?', '...', '…'];
     const specialPunctuation = ['&raquo;'];
@@ -89,12 +106,10 @@ function getEndingPunctuation(text) {
     const trimmedText = text.trim();
     const lastChar = trimmedText.slice(-1);
 
-    // Check if the last character is a common punctuation mark
     if (punctuation.includes(lastChar)) {
         return lastChar;
     }
 
-    // Check if the last few characters match any special punctuation marks
     for (let mark of specialPunctuation) {
         if (trimmedText.endsWith(mark)) {
             return mark;
@@ -104,23 +119,36 @@ function getEndingPunctuation(text) {
     return '';
 }
 
-// Helper function to escape quotes outside HTML tags and attributes
+/**
+ * Escape quotes outside HTML tags and attributes.
+ * @param {string} text - The input text.
+ * @returns {string} - The text with escaped quotes.
+ */
 function escapeQuotesInHTML(text) {
-    // Use a regular expression to match all HTML tags
     return text.replace(/(<\/?[\w\s="/.':;#-\/\?]+>)/g, (match) => {
-        // If the match is an HTML tag, return it unchanged
         if (match.startsWith('<') && match.endsWith('>')) {
             return match;
         }
-        // Otherwise, escape the double quote
         return match.replace(/"/g, '\\"');
     });
 }
 
+/**
+ * Get the token count of a text.
+ * @param {string} text - The input text.
+ * @returns {number} - The token count.
+ */
 export function getTokenCount(text) {
     return text.split(/\s+/).length;
 }
 
+/**
+ * Update the progress of the translation process.
+ * @param {number} translated - The number of translated strings.
+ * @param {number} total - The total number of strings to translate.
+ * @param {Date} startTime - The start time of the translation process.
+ * @param {string} progressBarId - The ID of the progress bar element.
+ */
 export function updateProgress(translated, total, startTime, progressBarId) {
     const progressBar = document.getElementById(progressBarId);
     const estimatedTime = progressBar.nextElementSibling;
@@ -138,6 +166,11 @@ export function updateProgress(translated, total, startTime, progressBarId) {
     }
 }
 
+/**
+ * Update the token usage display.
+ * @param {number} inputTokens - The number of input tokens used.
+ * @param {number} outputTokens - The number of output tokens used.
+ */
 export function updateTokensUsed(inputTokens, outputTokens) {
     const tokensUsed = document.getElementById('tokensUsed');
     const inputCostPerThousandTokens = 0.005;
@@ -153,6 +186,9 @@ export function updateTokensUsed(inputTokens, outputTokens) {
     tokensUsed.textContent = `Tokens used: ${combinedTokens} ($${totalCost.toFixed(5)})`;
 }
 
+/**
+ * Reset the progress and token usage display.
+ */
 export function resetProgressAndTokens() {
     const stringsTranslated = document.getElementById('stringsTranslated');
     const tokensUsed = document.getElementById('tokensUsed');
@@ -161,11 +197,18 @@ export function resetProgressAndTokens() {
     tokensUsed.textContent = `Tokens used: 0 ($0.00)`;
 }
 
+/**
+ * Reset the excluded terms input field.
+ */
 export function resetExcludedTerms() {
     const excludedTermsInput = document.getElementById('excludedTerms');
     excludedTermsInput.value = '';
 }
 
+/**
+ * Add the plugin name to the excluded terms.
+ * @param {string} fileName - The file name of the plugin.
+ */
 export function addPluginNameToExclusions(fileName) {
     const excludedTermsInput = document.getElementById('excludedTerms');
     const pluginName = formatPluginName(fileName.replace(/-[a-z]{2}_[A-Z]{2}$/, ''));
@@ -176,6 +219,11 @@ export function addPluginNameToExclusions(fileName) {
     excludedTermsInput.value = existingTerms.join(', ');
 }
 
+/**
+ * Calculate the number of strings in a .POT file.
+ * @param {File} file - The .POT file.
+ * @param {function} callback - Callback function to handle the total string count.
+ */
 export function calculateStringsInFile(file, callback) {
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -186,10 +234,22 @@ export function calculateStringsInFile(file, callback) {
     reader.readAsText(file);
 }
 
+/**
+ * Check if a term is excluded from translation.
+ * @param {string} term - The term to check.
+ * @param {Array<string>} normalizedExclusions - Array of normalized exclusions.
+ * @returns {boolean} - True if the term is excluded, false otherwise.
+ */
 export function isExcludedTerm(term, normalizedExclusions) {
     return normalizedExclusions.includes(term.toLowerCase());
 }
 
+/**
+ * Save the translated file.
+ * @param {string} translatedContent - The translated content.
+ * @param {string} originalFileName - The original file name.
+ * @param {string} selectedLanguage - The selected language code.
+ */
 export function saveTranslatedFile(translatedContent, originalFileName, selectedLanguage) {
     const blob = new Blob([translatedContent], { type: 'text/plain' });
     const newFileName = `${originalFileName}-${selectedLanguage}.po`;
@@ -199,22 +259,26 @@ export function saveTranslatedFile(translatedContent, originalFileName, selected
     link.click();
 }
 
+/**
+ * Show a notification message.
+ * @param {string} message - The notification message.
+ * @param {string} [type='green'] - The notification type (color).
+ * @param {string} [containerId='translate-notification-container'] - The ID of the container to show the notification in.
+ */
 export function showNotification(message, type = 'green', containerId = 'translate-notification-container') {
     let notificationContainer = document.getElementById(containerId);
 
-    // If the specified container does not exist, fall back to the translate-notification-container
     if (!notificationContainer) {
         console.warn(`Notification container with ID ${containerId} not found. Falling back to default container.`);
         notificationContainer = document.getElementById('translate-notification-container');
     }
 
-    // Ensure the fallback container also exists
     if (!notificationContainer) {
         console.error('No valid notification container found.');
         return;
     }
 
-    const notificationId = 'notification-' + Date.now(); // Unique ID for each notification
+    const notificationId = 'notification-' + Date.now();
 
     notificationContainer.innerHTML = `
         <div id="${notificationId}" class="rounded-md bg-${type}-50 p-4" role="alert" aria-live="assertive" aria-atomic="true" tabindex="-1" style="outline: none;">
