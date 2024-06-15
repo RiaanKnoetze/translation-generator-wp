@@ -137,6 +137,7 @@ function startTranslation(selectedLanguages) {
     reader.readAsText(uploadedFile);
 }
 
+
 /**
  * Initialize the language select dropdown.
  * 
