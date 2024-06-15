@@ -1,3 +1,6 @@
+import gettextParser from 'gettext-parser';
+import { saveAs } from 'file-saver';
+
 /**
  * Format the plugin name by capitalizing the first letter of each word.
  * @param {string} name - The original plugin name.
@@ -251,12 +254,17 @@ export function isExcludedTerm(term, normalizedExclusions) {
  * @param {string} selectedLanguage - The selected language code.
  */
 export function saveTranslatedFile(translatedContent, originalFileName, selectedLanguage) {
-    const blob = new Blob([translatedContent], { type: 'text/plain' });
-    const newFileName = `${originalFileName}-${selectedLanguage}.po`;
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.download = newFileName;
-    link.click();
+    // Save .po file
+    const poBlob = new Blob([translatedContent], { type: 'text/plain' });
+    const poFileName = `${originalFileName}-${selectedLanguage}.po`;
+    saveAs(poBlob, poFileName);
+
+    // Parse .po content and generate .mo file
+    const poObject = gettextParser.po.parse(translatedContent);
+    const moBuffer = gettextParser.mo.compile(poObject);
+    const moBlob = new Blob([moBuffer], { type: 'application/octet-stream' });
+    const moFileName = `${originalFileName}-${selectedLanguage}.mo`;
+    saveAs(moBlob, moFileName);
 }
 
 /**
