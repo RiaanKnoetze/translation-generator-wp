@@ -2,8 +2,8 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
-  mode: 'production', // or 'development' depending on your needs
-  entry: './public/assets/js/main.js',
+  mode: 'development', // or 'production' depending on your needs
+  entry: './public/assets/js/main.js',  // Front-end entry point
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'public', 'dist'),

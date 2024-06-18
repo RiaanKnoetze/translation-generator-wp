@@ -4,33 +4,29 @@ import { saveSettings, loadSettings, setTabListeners } from './settings.js';
 let choicesInstance;
 let modelChoicesInstance;
 
-/**
- * Initialize event listeners once the DOM content is loaded.
- */
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded and parsed');
     const saveBtn = document.getElementById('saveBtn');
     const apiKeyInput = document.getElementById('apiKey');
     const languageSelect = document.getElementById('languageSelect');
     const modelSelect = document.getElementById('modelSelect');
     const batchSizeInput = document.getElementById('batchSize');
+    const toggleAdvancedSettings = document.getElementById('toggleAdvancedSettings');
+    const toggleAutoGenerateMoFiles = document.getElementById('toggleAutoGenerateMoFiles');
 
     initializeFileUpload();
-    initializeTranslateButton();
+    initializeTranslateButton(); // Ensure this is called only once
 
     choicesInstance = initializeLanguageSelect();
     modelChoicesInstance = new Choices(modelSelect, { removeItemButton: true });
 
-    loadSettings(choicesInstance, modelChoicesInstance).then(() => {
+    loadSettings(choicesInstance, modelChoicesInstance, toggleAdvancedSettings, toggleAutoGenerateMoFiles).then(() => {
         sendLanguageMapping();
     });
 
     setTabListeners();
     initializeDragAndDrop();
 
-    /**
-     * Extract language mapping from the select options.
-     * @returns {Object} Language mapping object.
-     */
     function getLanguageMapping() {
         const options = languageSelect.options;
         const languageMapping = {};
@@ -40,9 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return languageMapping;
     }
 
-    /**
-     * Send language mapping to the server.
-     */
     async function sendLanguageMapping() {
         const languageMapping = getLanguageMapping();
         try {
@@ -63,65 +56,62 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedLanguages = Array.from(languageSelect.selectedOptions).map(option => option.value);
         const selectedModel = modelSelect.value;
         const batchSize = batchSizeInput.value;
-        saveSettings(apiKey, selectedLanguages, selectedModel, batchSize).then(() => {
+        const showAdvancedSettings = toggleAdvancedSettings.getAttribute('aria-checked') === 'true';
+        const autoGenerateMoFiles = toggleAutoGenerateMoFiles.getAttribute('aria-checked') === 'true';
+        saveSettings(apiKey, selectedLanguages, selectedModel, batchSize, showAdvancedSettings, autoGenerateMoFiles).then(() => {
             sendLanguageMapping();
         });
     });
 
-    // Hamburger menu functionality
-    const hamburgerBtn = document.getElementById('hamburgerBtn');
-    const closeMenuBtn = document.getElementById('closeMenuBtn');
-    const slidingMenu = document.getElementById('slidingMenu');
-    const tabTranslate = document.getElementById('tabTranslate');
-    const tabSettings = document.getElementById('tabSettings');
-    const tabTranslateDesktop = document.getElementById('tabTranslateDesktop');
-    const tabSettingsDesktop = document.getElementById('tabSettingsDesktop');
-
-    hamburgerBtn.addEventListener('click', function () {
-        slidingMenu.classList.remove('-translate-x-full');
-        slidingMenu.setAttribute('aria-hidden', 'false');
-        closeMenuBtn.focus();
+    toggleAdvancedSettings.addEventListener('click', function() {
+        const isChecked = toggleAdvancedSettings.getAttribute('aria-checked') === 'true';
+        toggleButton(toggleAdvancedSettings, !isChecked);
     });
 
-    closeMenuBtn.addEventListener('click', function () {
-        slidingMenu.classList.add('-translate-x-full');
-        slidingMenu.setAttribute('aria-hidden', 'true');
-        hamburgerBtn.focus();
+    toggleAutoGenerateMoFiles.addEventListener('click', function() {
+        const isChecked = toggleAutoGenerateMoFiles.getAttribute('aria-checked') === 'true';
+        toggleButton(toggleAutoGenerateMoFiles, !isChecked);
     });
 
-    tabTranslate.addEventListener('click', function () {
-        tabTranslate.classList.add('active');
-        tabSettings.classList.remove('active');
-        tabTranslateDesktop.classList.add('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
-        tabSettingsDesktop.classList.remove('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
-        slidingMenu.classList.add('-translate-x-full');
-        slidingMenu.setAttribute('aria-hidden', 'true');
-        document.getElementById('translateContainer').focus();
-    });
+    function toggleButton(button, isChecked) {
+        const buttonSpan = button.querySelector('span');
 
-    tabSettings.addEventListener('click', function () {
-        tabSettings.classList.add('active');
-        tabTranslate.classList.remove('active');
-        tabSettingsDesktop.classList.add('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
-        tabTranslateDesktop.classList.remove('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
-        slidingMenu.classList.add('-translate-x-full');
-        slidingMenu.setAttribute('aria-hidden', 'true');
-        document.getElementById('settingsContainer').focus();
-    });
+        if (isChecked) {
+            button.classList.remove('bg-gray-200');
+            button.classList.add('bg-blue-600');
+            button.setAttribute('aria-checked', 'true');
+            buttonSpan.classList.remove('translate-x-0');
+            buttonSpan.classList.add('translate-x-5');
 
-    tabTranslateDesktop.addEventListener('click', function () {
-        tabTranslateDesktop.classList.add('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
-        tabSettingsDesktop.classList.remove('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
-        document.getElementById('translateContainer').classList.add('active');
-        document.getElementById('settingsContainer').classList.remove('active');
-        document.getElementById('translateContainer').focus();
-    });
+            buttonSpan.innerHTML = `
+                <span class="opacity-0 duration-100 ease-out absolute inset-0 flex h-full w-full items-center justify-center transition-opacity" aria-hidden="true">
+                    <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 12 12">
+                        <path d="M4 8l2-2m0 0l2-2M6 6L4 4m2 2l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </span>
+                <span class="opacity-100 duration-200 ease-in absolute inset-0 flex h-full w-full items-center justify-center transition-opacity" aria-hidden="true">
+                    <svg class="h-3 w-3 text-blue-600" fill="currentColor" viewBox="0 0 12 12">
+                        <path d="M3 6l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </span>`;
+        } else {
+            button.classList.remove('bg-blue-600');
+            button.classList.add('bg-gray-200');
+            button.setAttribute('aria-checked', 'false');
+            buttonSpan.classList.remove('translate-x-5');
+            buttonSpan.classList.add('translate-x-0');
 
-    tabSettingsDesktop.addEventListener('click', function () {
-        tabSettingsDesktop.classList.add('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
-        tabTranslateDesktop.classList.remove('active', 'rounded-tl-lg', 'rounded-bl-lg', 'shadow-md', 'bg-gray-800', 'text-white');
-        document.getElementById('settingsContainer').classList.add('active');
-        document.getElementById('translateContainer').classList.remove('active');
-        document.getElementById('settingsContainer').focus();
-    });
+            buttonSpan.innerHTML = `
+                <span class="opacity-100 duration-200 ease-in absolute inset-0 flex h-full w-full items-center justify-center transition-opacity" aria-hidden="true">
+                    <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 12 12">
+                        <path d="M4 8l2-2m0 0l2-2M6 6L4 4m2 2l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </span>
+                <span class="opacity-0 duration-100 ease-out absolute inset-0 flex h-full w-full items-center justify-center transition-opacity" aria-hidden="true">
+                    <svg class="h-3 w-3 text-blue-600" fill="currentColor" viewBox="0 0 12 12">
+                        <path d="M3 6l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </span>`;
+        }
+    }
 });

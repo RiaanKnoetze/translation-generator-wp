@@ -2,10 +2,8 @@ import { processContent } from './translator.js';
 import { saveTranslatedFile, calculateStringsInFile, resetProgressAndTokens, resetExcludedTerms, addPluginNameToExclusions, showNotification } from './utils.js';
 
 let uploadedFile = null;
+let isTranslating = false;
 
-/**
- * Initialize the file upload functionality.
- */
 export function initializeFileUpload() {
     const uploadInput = document.getElementById('fileUpload');
     const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -26,9 +24,6 @@ export function initializeFileUpload() {
         handleFile(file);
     });
 
-    /**
-     * Reset the UI elements related to file upload.
-     */
     function resetUI() {
         fileNameDisplay.textContent = '';
         languagesDisplay.textContent = '';
@@ -39,9 +34,6 @@ export function initializeFileUpload() {
         fileInfoContainer.classList.add('hidden');
     }
 
-    /**
-     * Update translation details in the UI.
-     */
     function updateTranslationDetails() {
         const selectedLanguages = Array.from(document.getElementById('languageSelect').selectedOptions).map(option => option.text);
         const gptModel = document.getElementById('modelSelect').value;
@@ -54,12 +46,12 @@ export function initializeFileUpload() {
     document.getElementById('saveBtn').addEventListener('click', updateTranslationDetails);
 }
 
-/**
- * Initialize the translate button functionality.
- */
 export function initializeTranslateButton() {
     const translateButton = document.getElementById('translateBtn');
     translateButton.addEventListener('click', function() {
+        if (isTranslating) return;
+        isTranslating = true;
+
         const progressBarsContainer = document.getElementById('progressBarsContainer');
         const languageSelect = document.getElementById('languageSelect');
 
@@ -87,16 +79,13 @@ export function initializeTranslateButton() {
             tableBody.appendChild(progressRow);
         });
 
-        startTranslation(selectedLanguages);
+        startTranslation(selectedLanguages).finally(() => {
+            isTranslating = false;
+        });
     });
 }
 
-/**
- * Start the translation process.
- * 
- * @param {Array<Object>} selectedLanguages - The selected languages for translation.
- */
-function startTranslation(selectedLanguages) {
+async function startTranslation(selectedLanguages) {
     if (!uploadedFile) {
         showNotification('No file uploaded. Please upload a .POT file.', 'red', 'translate-notification-container');
         return;
@@ -122,13 +111,14 @@ function startTranslation(selectedLanguages) {
             const progressBarId = `progressBar-${language.code}`;
             const progressTimeId = `progressTime-${language.code}`;
 
-            // Remove the spinner when translation starts
+            document.getElementById(progressBarId).style.width = '0%';
             document.getElementById(progressTimeId).innerHTML = '0s';
 
             const { translatedContent } = await processContent(content, excludedTerms, originalFileName, startTime, language.code, batchSize, progressBarId);
+
+            console.log(`Preparing to save translated file for: ${originalFileName}-${language.code}.po`);
             saveTranslatedFile(translatedContent, originalFileName, language.code);
 
-            // Show checkmark on completion
             document.getElementById(progressBarId).style.width = '100%';
             document.getElementById(progressTimeId).innerHTML = '<i class="fas fa-check text-white"></i>';
         }
@@ -137,12 +127,6 @@ function startTranslation(selectedLanguages) {
     reader.readAsText(uploadedFile);
 }
 
-
-/**
- * Initialize the language select dropdown.
- * 
- * @returns {Choices} - The initialized Choices instance.
- */
 export function initializeLanguageSelect() {
     const languageSelect = document.getElementById('languageSelect');
     return new Choices(languageSelect, {
@@ -161,9 +145,6 @@ export function initializeLanguageSelect() {
     });
 }
 
-/**
- * Initialize the drag and drop functionality for file upload.
- */
 export function initializeDragAndDrop() {
     const dropZone = document.getElementById('dropZone');
     const fileUploadInput = document.getElementById('fileUpload');
@@ -197,11 +178,6 @@ export function initializeDragAndDrop() {
     });
 }
 
-/**
- * Handle the uploaded file.
- * 
- * @param {File} file - The uploaded file.
- */
 function handleFile(file) {
     const translateButton = document.getElementById('translateBtn');
     const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -242,9 +218,6 @@ function handleFile(file) {
         fileInfoContainer.classList.add('hidden');
     }
 
-    /**
-     * Reset the UI elements related to file upload.
-     */
     function resetUI() {
         fileNameDisplay.textContent = '';
         languagesDisplay.textContent = '';
@@ -255,9 +228,6 @@ function handleFile(file) {
         fileInfoContainer.classList.add('hidden');
     }
 
-    /**
-     * Update translation details in the UI.
-     */
     function updateTranslationDetails() {
         const selectedLanguages = Array.from(document.getElementById('languageSelect').selectedOptions).map(option => option.text);
         const gptModel = document.getElementById('modelSelect').value;

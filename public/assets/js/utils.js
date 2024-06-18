@@ -1,3 +1,4 @@
+// Import gettext-parser and file-saver
 import gettextParser from 'gettext-parser';
 import { saveAs } from 'file-saver';
 
@@ -95,7 +96,6 @@ export function applyFixes(original, translation, exclusionMap) {
 
     return translation;
 }
-
 
 /**
  * Get the ending punctuation of a string.
@@ -257,14 +257,23 @@ export function saveTranslatedFile(translatedContent, originalFileName, selected
     // Save .po file
     const poBlob = new Blob([translatedContent], { type: 'text/plain' });
     const poFileName = `${originalFileName}-${selectedLanguage}.po`;
+    console.log(`Saving translated file: ${poFileName}`);
     saveAs(poBlob, poFileName);
 
-    // Parse .po content and generate .mo file
-    const poObject = gettextParser.po.parse(translatedContent);
-    const moBuffer = gettextParser.mo.compile(poObject);
-    const moBlob = new Blob([moBuffer], { type: 'application/octet-stream' });
-    const moFileName = `${originalFileName}-${selectedLanguage}.mo`;
-    saveAs(moBlob, moFileName);
+    // Check if auto-generate .mo files is enabled
+    const toggleAutoGenerateMoFiles = document.getElementById('toggleAutoGenerateMoFiles').getAttribute('aria-checked') === 'true';
+
+    if (toggleAutoGenerateMoFiles) {
+        // Parse .po content and generate .mo file
+        const poObject = gettextParser.po.parse(translatedContent);
+        const moBuffer = gettextParser.mo.compile(poObject);
+        const moBlob = new Blob([moBuffer], { type: 'application/octet-stream' });
+        const moFileName = `${originalFileName}-${selectedLanguage}.mo`;
+        console.log(`Saving .mo file: ${moFileName}`);
+        saveAs(moBlob, moFileName);
+    } else {
+        console.log('Auto-generate .mo files is disabled');
+    }
 }
 
 /**
@@ -304,7 +313,7 @@ export function showNotification(message, type = 'green', containerId = 'transla
                 <button type="button" id="dismissBtn" class="inline-flex rounded-md bg-${type}-50 p-1.5 text-${type}-500 hover:bg-${type}-100 focus:outline-none focus:ring-2 focus:ring-${type}-600 focus:ring-offset-2 focus:ring-offset-${type}-50" aria-label="Dismiss notification">
                   <span class="sr-only">Dismiss</span>
                   <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 8.94l3.72-3.72a.75.75 0 00-1.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
                   </svg>
                 </button>
               </div>
