@@ -9,3 +9,20 @@ node_modules/
 
 # Git directory
 .git/
+
+# Webpack output directory
+public/dist/
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+
+# Build files
+build/
+dist/

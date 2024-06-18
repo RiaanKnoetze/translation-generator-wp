@@ -1,4 +1,3 @@
-
 # Translation Generator WP
 
 ![Translation Generator WP](translation-generator-wp.png)
@@ -29,39 +28,47 @@ Follow these steps to set up the project:
 
 2. **Install dependencies:**
 
-   Ensure you have `Node.js` installed on your system. Then run:
+Ensure you have `Node.js` installed on your system. Then run:
 
-   ```
-   npm install
-   ```
+```
+npm install
+```
 
 3. **Set up environment variables:**
 
-   [Optional] Create a `.env` file in the root directory of the project and add your OpenAI API Key:
+Create a .env file in the root directory of the project and add your OpenAI API Key:
 
-   ```
-   OPENAI_API_KEY=sk-123
-   ```
+```
+OPENAI_API_KEY=sk-123
+```
 
-   Alternatively, you can configure the API key on the app settings page.
+Alternatively, you can configure the API key on the app settings page.
 
-4. **Run the project:**
+4. **Build the project:**
 
-   Start the node server by running:
+Run the webpack build command to bundle the JavaScript files:
 
-   ```
-   npm start
-   ```
+```
+npm run build
+```
 
-   If you need to run the server with elevated privileges, use:
+5. **Run the project:**
 
-   ```
-   sudo node server.js
-   ```
+Start the node server by running:
 
-5. **Access the application:**
+```
+npm start
+```
 
-   Open your web browser and navigate to [http://localhost:3000](http://localhost:3000) to start using the Translation Generator WP.
+If you need to run the server with elevated privileges, use:
+
+```
+sudo npm start
+```
+
+6. **Access the application:**
+
+Open your web browser and navigate to http://localhost:3000 to start using the Translation Generator WP.
 
 ## Usage
 
@@ -122,3 +129,4 @@ The application currently supports the following languages:
 ## License
 
 This project is licensed under the GPLv3 License. See the LICENSE file for details.
+

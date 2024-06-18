@@ -1,3 +1,6 @@
+import gettextParser from 'gettext-parser';
+import { saveAs } from 'file-saver';
+
 /**
  * Format the plugin name by capitalizing the first letter of each word.
  * @param {string} name - The original plugin name.
