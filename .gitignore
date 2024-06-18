@@ -1,0 +1,11 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# MacOS-specific files
+.DS_Store
+
+# Git directory
+.git/

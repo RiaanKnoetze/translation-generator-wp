@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Generator WP</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/assets/css/translator.css">
+    <link href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script src="/assets/js/main.js" type="module"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="flex w-full max-w-4xl flex-col md:flex-row">
+        <!-- Hamburger Menu -->
+        <div class="md:hidden flex items-center justify-between w-full mb-4">
+            <button id="hamburgerBtn" class="text-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" aria-label="Open menu">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+        <!-- Sliding Menu -->
+        <div id="slidingMenu" class="fixed top-0 left-0 h-full w-3/4 shadow-md transform -translate-x-full transition-transform duration-300 z-50 bg-white" aria-hidden="true">
+            <button id="closeMenuBtn" class="absolute top-4 right-4 text-gray-800 focus:outline-none" aria-label="Close menu">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+            <div class="flex flex-col p-4">
+                <!-- Add fa-globe icon to the top of the sliding menu -->
+                <div class="mb-4 flex items-center space-x-2 border-b border-gray-100">
+                    <i class="fa-solid fa-globe text-3xl font-bold text-gray-800 px-4 mb-4" aria-hidden="true"></i>
+                </div>                
+                <button id="tabTranslate" class="mb-4 py-2 px-4 text-left text-gray-800 active" role="tab" aria-selected="true" aria-controls="translateContainer">App</button>
+                <button id="tabSettings" class="py-2 px-4 text-left text-gray-800" role="tab" aria-selected="false" aria-controls="settingsContainer">Settings</button>
+            </div>
+        </div>
+        <!-- Vertical Tabs for larger screens -->
+        <div class="hidden md:flex flex-col md:mb-0 md:mr-4 tabs" role="tablist">
+            <button id="tabTranslateDesktop" class="active rounded-tl-lg rounded-bl-lg shadow-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 flex-1 md:flex-none" role="tab" aria-selected="true" aria-controls="translateContainer">App</button>
+            <button id="tabSettingsDesktop" class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 flex-1 md:flex-none" role="tab" aria-selected="false" aria-controls="settingsContainer">Settings</button>
+        </div>
+        
+        <!-- Tab Contents -->
+        <div class="flex-1">
+            <div id="translateContainer" class="tab-content active" role="tabpanel" aria-labelledby="tabTranslate">
+                <div class="w-full bg-white shadow-md rounded-lg p-8 space-y-6 relative">
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center space-x-2 md:flex">
+                        <!-- Show fa-globe icon and hide heading in responsive mode -->
+                        <i class="fa-solid fa-globe" aria-hidden="true"></i>
+                        <span class="hidden md:block">Translation Generator WP</span>
+                        <span class="text-right text-gray-300 text-xs font-normal hidden md:inline">v1.8</span>
+                    </h1>
+                    <p class="text-gray-600 hidden md:block">Effortlessly translate your WordPress plugin language files with precision and ease.</p>
+                    <!-- Notification Container -->
+                    <div id="translate-notification-container" class="mb-4"></div>
+                    <div class="flex flex-col items-center space-y-4">
+                        <div id="dropZone" class="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-800 mr-2"></i>
+                            <p class="text-gray-800 font-bold">Upload .POT Template</p>
+                        </div>
+                        <input type="file" id="fileUpload" class="hidden" aria-describedby="fileUploadDesc">
+                        <div class="w-full flex justify-end">
+                            <button id="translateBtn" disabled class="w-1/3 px-4 py-3 text-sm font-medium text-white bg-green-500 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-300 uppercase">Translate</button>
+                        </div>
+                    </div>
+                    <span id="fileUploadDesc" class="sr-only">Upload a .POT file for translation</span>
+                    <div id="fileInfoContainer" class="mt-6 border-t border-gray-100 pt-2 hidden">
+                        <h2 class="text-2xl font-bold text-gray-800 pb-4">Translation Details</h2>
+                        <dl>
+                            <div class="px-4 py-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Source</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 font-mono sm:col-span-2 sm:mt-0" id="fileNameDisplay"></dd>
+                            </div>
+                            <div class="px-4 py-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Target language(s)</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 font-mono sm:col-span-2 sm:mt-0" id="languagesDisplay"></dd>
+                            </div>
+                            <div class="px-4 py-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Strings in source</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 font-mono sm:col-span-2 sm:mt-0" id="stringsFound"></dd>
+                            </div>
+                            <div class="px-4 py-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Strings to translate</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 font-mono sm:col-span-2 sm:mt-0" id="stringsToTranslate"></dd>
+                            </div>
+                            <div class="px-4 py-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">GPT model</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 font-mono sm:col-span-2 sm:mt-0" id="gptModelDisplay"></dd>
+                            </div>
+                        </dl>
+                    </div>                    
+                    <div id="progressBarsContainer" class="hidden mt-6"></div>
+                    <hr class="border-t border-dashed border-gray-300 my-4">
+                    <div class="flex justify-between text-gray-500 text-xs mt-4">
+                        <div id="stringsTranslated" class="hidden md:block">Strings translated: 0/0</div>
+                        <div id="tokensUsed">Tokens used: 0 ($0.00)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="settingsContainer" class="tab-content" role="tabpanel" aria-labelledby="tabSettings">
+                <div class="w-full bg-white shadow-md rounded-lg p-8 space-y-6 relative">
+                    <h1 class="text-2xl font-bold text-gray-800 hidden md:block">Settings</h1>
+                    <!-- Notification Container -->
+                    <div id="settings-notification-container" class="mb-4"></div>
+
+                    <div class="mt-6 border-t border-gray-100">
+                        <dl class="divide-y divide-gray-100">
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiKey">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">OpenAI API Key
+                                    <div class="tooltip ml-2">
+                                        <i class="fas fa-info-circle text-gray-400"></i>
+                                        <span class="tooltiptext">Enter your OpenAI API key.</span>
+                                    </div>
+                                </dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                    <input type="password" name="apiKey" id="apiKey" autocomplete="off" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6" aria-describedby="apiKeyDesc">
+                                    <span id="apiKeyDesc" class="sr-only">Enter your OpenAI API key</span>
+                                </dd>
+                            </div>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiLanguages">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Target Language
+                                    <div class="tooltip ml-2">
+                                        <i class="fas fa-info-circle text-gray-400"></i>
+                                        <span class="tooltiptext">Select the language to translate to.</span>
+                                    </div>
+                                </dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                    <select id="languageSelect" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6" aria-describedby="languageSelectDesc" multiple>
+                                        <option value="en_US">English (United States)</option>
+                                        <option value="es_ES">Spanish</option>
+                                        <option value="de_DE">German</option>
+                                        <option value="fr_FR">French</option>
+                                        <option value="it_IT">Italian</option>
+                                        <option value="pt_PT">Portuguese (Portugal)</option>
+                                        <option value="ru_RU">Russian</option>
+                                        <option value="nl_NL">Dutch</option>
+                                        <option value="ja">Japanese</option>
+                                        <option value="zh_CN">Chinese (Simplified)</option>
+                                        <option value="pl_PL">Polish</option>
+                                        <option value="ro_RO">Romanian</option>
+                                        <option value="hu_HU">Hungarian</option>
+                                        <option value="sv_SE">Swedish</option>
+                                        <option value="fi">Finnish</option>
+                                        <option value="da_DK">Danish</option>
+                                        <option value="el">Greek</option>
+                                        <option value="tr_TR">Turkish</option>
+                                        <option value="he_IL">Hebrew</option>
+                                        <option value="ko_KR">Korean</option>
+                                    </select>
+                                    <span id="languageSelectDesc" class="sr-only">Select the target language for translation</span>
+                                </dd>
+                            </div>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiModel">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">GPT Model
+                                    <div class="tooltip ml-2">
+                                        <i class="fas fa-info-circle text-gray-400"></i>
+                                        <span class="tooltiptext">Select the GPT model to use for translation.</span>
+                                    </div>
+                                </dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                    <select id="modelSelect" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6" aria-describedby="modelSelectDesc">
+                                        <option value="gpt-4o">GPT-4o (Default)</option>
+                                        <option value="gpt-4">GPT-4</option>
+                                        <option value="gpt-3.5">GPT-3.5</option>
+                                    </select>
+                                    <span id="modelSelectDesc" class="sr-only">Select the GPT model to use for translation</span>
+                                </dd>
+                            </div>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 apiBatchSize">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Batch Size
+                                    <div class="tooltip ml-2">
+                                        <i class="fas fa-info-circle text-gray-400"></i>
+                                        <span class="tooltiptext">Enter the batch size for translation.</span>
+                                    </div>
+                                </dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                    <input type="number" id="batchSize" min="10" step="10" value="50" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm sm:leading-6" aria-describedby="batchSizeDesc">
+                                    <span id="batchSizeDesc" class="sr-only">Enter the batch size for translation</span>
+                                </dd>
+                            </div>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 excludedTerms">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Excluded Terms
+                                    <div class="tooltip ml-2">
+                                        <i class="fas fa-info-circle text-gray-400"></i>
+                                        <span class="tooltiptext">Enter terms to exclude from translation, separated by commas.</span>
+                                    </div>
+                                </dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                    <textarea id="excludedTerms" placeholder="Enter terms to exclude from translation, separated by commas" class="block w-full p-4 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" rows="4" aria-describedby="excludedTermsDesc"></textarea>
+                                    <span id="excludedTermsDesc" class="sr-only">Enter terms to exclude from translation, separated by commas</span>
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
+                    <!-- Save Button -->
+                    <div class="flex justify-end mt-4">
+                        <button id="saveBtn" class="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
