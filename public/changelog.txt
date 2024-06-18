@@ -1,6 +1,9 @@
 *** Translation Generator WP ***
 
-xxx - Version 1.7
+2024-06-18 - Version 1.8
+* Fix - Remove webpack overhead for creating .mo files
+
+2024-06-16 - Version 1.7
 * New - Updated App page design
 * New - Add ability to drag & drop .POT template files for selection
 * New - Add support for both .mo/.po translated files

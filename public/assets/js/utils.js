@@ -137,6 +137,15 @@ function escapeQuotesInHTML(text) {
 }
 
 /**
+ * Remove unwanted backslashes from escaped special characters.
+ * @param {string} text - The input text.
+ * @returns {string} - The text with cleaned special characters.
+ */
+function cleanEscapedSpecialChars(text) {
+    return text.replace(/\\([^\w\\])/g, '$1');
+}
+
+/**
  * Get the token count of a text.
  * @param {string} text - The input text.
  * @returns {number} - The token count.
@@ -248,23 +257,43 @@ export function isExcludedTerm(term, normalizedExclusions) {
 }
 
 /**
+ * Escape quotes in the translation strings.
+ * @param {string} text - The input text.
+ * @returns {string} - The text with escaped quotes.
+ */
+function escapeQuotes(text) {
+    return text.replace(/"/g, '\\"').replace(/'/g, "\\'");
+}
+
+/**
  * Save the translated file.
  * @param {string} translatedContent - The translated content.
  * @param {string} originalFileName - The original file name.
  * @param {string} selectedLanguage - The selected language code.
  */
 export function saveTranslatedFile(translatedContent, originalFileName, selectedLanguage) {
-    // Save .po file
-    const poBlob = new Blob([translatedContent], { type: 'text/plain' });
-    const poFileName = `${originalFileName}-${selectedLanguage}.po`;
-    saveAs(poBlob, poFileName);
+    try {
+        // Escape quotes in the translated content
+        const escapedContent = translatedContent.split('\n').map(line => {
+            if (line.startsWith('msgid') || line.startsWith('msgstr')) {
+                const escapedLine = line.replace(/"(.*)"/, (match, p1) => `"${escapeQuotes(p1)}"`);
+                return cleanEscapedSpecialChars(escapedLine);
+            }
+            return line;
+        }).join('\n');
 
-    // Parse .po content and generate .mo file
-    const poObject = gettextParser.po.parse(translatedContent);
-    const moBuffer = gettextParser.mo.compile(poObject);
-    const moBlob = new Blob([moBuffer], { type: 'application/octet-stream' });
-    const moFileName = `${originalFileName}-${selectedLanguage}.mo`;
-    saveAs(moBlob, moFileName);
+        // Save .po file
+        const poBlob = new Blob([escapedContent], { type: 'text/plain' });
+        const poFileName = `${originalFileName}-${selectedLanguage}.po`;
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(poBlob);
+        link.download = poFileName;
+        link.click();
+
+    } catch (poError) {
+        console.error(`Error saving .po file for ${selectedLanguage}:`, poError);
+        showNotification(`Error saving .po file for ${selectedLanguage}: ${poError.message}`, 'red');
+    }
 }
 
 /**
@@ -304,7 +333,7 @@ export function showNotification(message, type = 'green', containerId = 'transla
                 <button type="button" id="dismissBtn" class="inline-flex rounded-md bg-${type}-50 p-1.5 text-${type}-500 hover:bg-${type}-100 focus:outline-none focus:ring-2 focus:ring-${type}-600 focus:ring-offset-2 focus:ring-offset-${type}-50" aria-label="Dismiss notification">
                   <span class="sr-only">Dismiss</span>
                   <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 8.94l3.72-3.72a.75.75 0 00-1.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
                   </svg>
                 </button>
               </div>
