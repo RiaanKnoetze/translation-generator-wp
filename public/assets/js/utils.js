@@ -329,8 +329,8 @@ export function showNotification(message, type = 'green', containerId = 'transla
               <div class="-mx-1.5 -my-1.5">
                 <button type="button" id="dismissBtn" class="inline-flex rounded-md bg-${type}-50 p-1.5 text-${type}-500 hover:bg-${type}-100 focus:outline-none focus:ring-2 focus:ring-${type}-600 focus:ring-offset-2 focus:ring-offset-${type}-50" aria-label="Dismiss notification">
                   <span class="sr-only">Dismiss</span>
-                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 8.94l3.72-3.72a.75.75 0 00-1.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                  <svg class="h-5 w-5" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
