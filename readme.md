@@ -43,7 +43,7 @@ Follow these steps to set up the project:
    OPENAI_API_KEY=sk-123
    ```
 
-   Alternatively, you can configure the API key on the app settings page.
+   Alternatively, you can configure the API key on the app settings page. To create an OpenAI API key, you will have to visit this [page](https://platform.openai.com/api-keys).
 
 4. **Run the project:**
 
